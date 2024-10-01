@@ -30,8 +30,8 @@ class Stock:
         The method returns the closing stock prices from the `Stock` data.
         :return: The closing data
         """
-        stockData = self.stock['Close']
-        return stockData
+        # 'Close', 'High', 'Low', 'Open', 'T', 'Volume'
+        return self.stock['Open'], self.stock['High'], self.stock['Low'], self.stock['Close']
 
     def meanReturns_and_std(self):
         """
