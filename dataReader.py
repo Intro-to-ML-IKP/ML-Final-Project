@@ -20,26 +20,49 @@ class DataReader:
         self.enddate = "2024-09-01"
 
     def getData(self, nPoints=50, nSets=100):
-        """Retrieves datasets of user-specified length based on interval, until end date is reached
+        """Retrieves datasets of user-specified length based on interval, ensuring sufficient data points.
         
         Parameters:
         nPoints     (int)   - Number of datapoints to download. Default=50
         nSets       (int)   - Number of sets of data to download. Default=100
 
         Returns:
-        Stock data in format [(open, high, low, close)]"""
+        Stock data in format [(open, high, low, close)]
+        """
 
-        # Calculate start date
-        if self.interval == "1d":
-            end = datetime.strptime(self.enddate, "%Y-%m-%d")
-            start = end - timedelta(days=(nPoints*nSets - 1))
+        required_data_points = nPoints * nSets
+        approx_total_days = int(required_data_points * (7 / 5))  # Adjust for weekends and holidays
+        
+        end = datetime.strptime(self.enddate, "%Y-%m-%d")
+        start = end - timedelta(days=approx_total_days)
+        startdate = start.strftime("%Y-%m-%d")
+        
+        attempts = 0
+        max_attempts = 5  # Limit to prevent infinite loops
+        
+        while attempts < max_attempts:
+            # Retrieve data
+            stock = Stock(self.stockName, startdate, self.enddate, self.interval)
+            open, high, low, close = stock.get_data()
+            
+            # Combine into OHLC format
+            self.data = [(o, h, l, c) for o, h, l, c in zip(open, high, low, close)]
+            
+            # Check if we have enough data
+            if len(self.data) >= required_data_points:
+                # Slice to the exact number of required points
+                self.data = self.data[-required_data_points:]
+                return self.data
+            
+            # Otherwise, increase the date range and retry
+            attempts += 1
+            approx_total_days = int(approx_total_days * 1.5)  # Increase the time window by 50%
+            start = end - timedelta(days=approx_total_days)
             startdate = start.strftime("%Y-%m-%d")
+            print(f"Retry {attempts}: Extending the start date to {startdate}...")
 
-        # Retrieve data
-        stock = Stock(self.stockName, startdate, self.enddate, self.interval)
-        open, high, low, close = stock.get_data()
-        self.data = [(o,h,l,c) for o,h,l,c in zip(open,high,low,close)]
-        return self.data
+        raise ValueError(f"Unable to retrieve sufficient data after {max_attempts} attempts.")
+
     
     def getLabels(self, nPoints=50, labelSize=5):
         """Get the labels, thus next labelSize candlesticks, and split them from the datapoints
