@@ -39,7 +39,6 @@ def train_stock_predictor(X_train, y_train, X_val, y_val,
     # Input shape is (4n) where 4 is for OHLC and n is the number of candlesticks
     input_shape = 4 * n  
 
-
     model = Sequential()
     
     # Input layer and hidden layers

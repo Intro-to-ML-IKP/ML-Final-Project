@@ -5,7 +5,9 @@ from visualize import plot_candlestick
 import numpy as np
 
 def reshape_data(data):
-    return np.array([np.array(candlestick).flatten() for candlestick in data])
+    return [np.array(candlestick).flatten() for candlestick in data]
+
+def reshape_labels
 
 def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, networkStructure, activationFunction, learning_rate, batch_size, epochs):
     """Trains a model on a specified stock to predict the next prices
@@ -36,9 +38,19 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     # Set parameters
     model_save_path = f"{stockCode}_model.keras"
 
+    xTrain = reshape_data(training_data)
+    print(len(xTrain))
+    print(xTrain)
+
+    yTrain = training_labels
+    print(len(yTrain))
+    print(yTrain)
+
+    return
+
     # Train the model
     model, history = train_stock_predictor(
-        X_train=reshape_data(training_data), y_train=training_labels, 
+        X_train=list(reshape_data(training_data)), y_train=training_labels, 
         X_val=reshape_data(validation_data), y_val=validation_labels, 
         n=(pointsPerSet - labelsPerSet), 
         k=labelsPerSet, 
