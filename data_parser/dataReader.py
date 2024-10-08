@@ -13,7 +13,7 @@ class DataReader:
         None"""
         self._validate_date(enddate)
         self.stockName = stockName
-        self.interval = "1d"
+        self.interval = interval
         self.enddate = "2024-09-01"
         self.data = None
 

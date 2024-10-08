@@ -1,11 +1,27 @@
 # Main program
 from data_parser.dataReader import DataReader
+from data_parser.dataProcessor import DataProcessor
 from neuralNetwork.network import train_stock_predictor, load_stock_predictor, test_stock_predictor, analyze_trend
 from visualisation.visualize import plot_candlestick
 import numpy as np
 
 def reshape_data(data):
     return [np.array(candlestick).flatten() for candlestick in data]
+
+def testing_SMA():
+    dR = DataReader("AAPL")                                  # Initialize for AAPL stock
+    stock_data = dR.getData(10, 5)              # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints
+    #data, labels = dR.getLabels(10, 3)     # Retrieve the labels of the next [labelsPerSet] datapoints for each set of [pointsPerSet] points, splitting data from labels
+    high, low, open_, close = list(zip(*stock_data))
+
+    processor = DataProcessor(stock_data, None)
+
+    sets_SMA = processor.calculate_SMA()
+
+    extrapolation_SMA = processor.extrapolate_the_SMA(sets_SMA[0], 10, -2)
+
+    plot_candlestick(high, low, open_, close, sets_SMA[0], extrapolated_sma = extrapolation_SMA)
+
 
 def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, networkStructure, activationFunction, learning_rate, batch_size, epochs):
     """Trains a model on a specified stock to predict the next prices
@@ -28,8 +44,9 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     dR = DataReader(stockCode)                                  # Initialize for AAPL stock
     stock_data = dR.getData(pointsPerSet, numSets)              # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints
     data, labels = dR.getLabels(pointsPerSet, labelsPerSet)     # Retrieve the labels of the next [labelsPerSet] datapoints for each set of [pointsPerSet] points, splitting data from labels
-    data = dR.preprocess()                                      # Apply preproccesing on data if applicable
-
+    #data = dR.preprocess()                                      # Apply preproccesing on data if applicable
+    high, low, open_, close = list(zip(*stock_data))
+    plot_candlestick(high, low, open_, close)
     # Apply a train, test, validation split on the data
     training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels = dR.split_data(testingPercentage, validationPercentage)
 
@@ -77,5 +94,5 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
 
 if __name__ == "__main__":
     #main("AAPL", 5, 10, 3, 0.8, 0.1, [128, 64, 32], "relu", 0.001, 32, 50)
-    date = "2000-01-24"
-    print(date.split("-")[0])
+    testing_SMA()
+    

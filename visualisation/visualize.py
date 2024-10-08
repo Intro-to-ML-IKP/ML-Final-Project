@@ -1,7 +1,14 @@
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-def plot_candlestick(high, low, open_, close, title='Candlestick Chart'):
+def plot_candlestick(
+        high,
+        low,
+        open_,
+        close,
+        sma: list[float] = None, sma_length: int = 3,
+        extrapolated_sma: list[float] = None,  
+        title='Candlestick Chart'):
     fig, ax = plt.subplots()
 
     # Number of data points
@@ -21,9 +28,24 @@ def plot_candlestick(high, low, open_, close, title='Candlestick Chart'):
         # Plot the rectangle (the body) between open and close
         ax.add_patch(plt.Rectangle((days[i] - 0.2, open_[i]), 0.4, close[i] - open_[i], color=color))
 
+    if sma is not None:
+        # Delete the first n elements
+        x_val_SMA = days[sma_length-1:]
+        ax.plot(x_val_SMA, sma, color="red", label = "SMA")
+        if extrapolated_sma is not None:
+            # Getting the x values for the days that the extrapolation happend
+            nr_days_extrapolated = len(extrapolated_sma)
+            last_day = days[-1]
+
+            x_val_extrapolated_SMA = list(range(nr_days_extrapolated))
+            x_val_extrapolated_SMA = [x + last_day for x in x_val_extrapolated_SMA]
+            
+            ax.plot(x_val_extrapolated_SMA, extrapolated_sma, color = "yellow", label = f"Extrapolated SMA ({nr_days_extrapolated} days)")
+
     # Formatting
     ax.set_title(title)
     ax.set_ylabel('Price')
 
+    ax.legend()
     # Show the plot
     plt.show()
