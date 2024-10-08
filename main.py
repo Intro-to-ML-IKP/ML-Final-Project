@@ -2,7 +2,7 @@
 from data_parser.dataReader import DataReader
 from data_parser.dataProcessor import DataProcessor
 from neuralNetwork.network import train_stock_predictor, load_stock_predictor, test_stock_predictor, analyze_trend
-from visualisation.visualize import plot_candlestick, plot_residuals
+from visualisation.visualize import PlotStocks#plot_candlestick, plot_residuals
 import numpy as np
 
 def reshape_data(data):
@@ -24,9 +24,14 @@ def testing_SMA():
 
     residuals = processor.calculate_residuals(SMA)
 
-    plot_candlestick(high, low, open_, close, sets_SMA[0], extrapolated_sma = extrapolation_SMA)
+    plotter = PlotStocks(stock_data, SMA, extrapolation_SMA, residuals)
 
-    plot_residuals(residuals)
+    # plotter.plot_candlestick(simpleMovingAverage=True)    # If you want to plot only the candlesticks
+
+    # plotter.plot_residuals()                              # If you want to plot only the residuals
+
+    # Master Plot
+    plotter.masterPlot()
 
 
 def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, networkStructure, activationFunction, learning_rate, batch_size, epochs):
