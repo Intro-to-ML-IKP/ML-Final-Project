@@ -12,6 +12,13 @@ class DataProcessor:
         self._labels = labels
         self._data_sets = self._calculate_data_sets()
 
+    @property
+    def closing_prices(self):
+        """
+        Gets the closing prices.
+        """
+        return self._data_sets[0]["Close"]
+
     def _calculate_data_sets(self) -> list[pd.DataFrame]:
         """
         Unzips the data and puts it in a panda data frame. It also rounds
@@ -76,6 +83,27 @@ class DataProcessor:
             "Expected type: list[pd.dataFrame]"
             ) as e:
             raise e
+        
+    def calculate_residuals(self, sma: list[float]) -> list[float]:
+        """
+        Calculates the residuals by substracting the closing prices
+        from a Simple Moving Average (SMA).
+
+        :param sma: Simple Moving Average on the data.
+        :sma type: list[float]
+        :return residuals: the difference between SMA and the closing
+        prices.
+        :residuals type: list[float]
+        """
+        closing_prices = self.closing_prices
+
+        nr_of_residuals = len(sma)
+        closing_prices = closing_prices[-nr_of_residuals:]
+
+        residuals = [a - b for a, b in zip(sma, closing_prices)]
+
+        return residuals
+
     
     def extrapolate_the_SMA(
             self,

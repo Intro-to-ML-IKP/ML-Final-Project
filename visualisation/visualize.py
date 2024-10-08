@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 
 def plot_candlestick(
         high,
@@ -9,7 +8,7 @@ def plot_candlestick(
         sma: list[float] = None, sma_length: int = 3,
         extrapolated_sma: list[float] = None,  
         title='Candlestick Chart'):
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
 
     # Number of data points
     num_data = len(high)
@@ -45,6 +44,25 @@ def plot_candlestick(
     # Formatting
     ax.set_title(title)
     ax.set_ylabel('Price')
+
+    ax.legend()
+    # Show the plot
+    plt.show()
+
+def plot_residuals(residuals):
+    _, ax = plt.subplots()
+
+    # Number of data points
+    num_data = len(residuals)
+    
+    # Create an array of index values to represent days
+    days = range(num_data)
+
+    ax.plot(days, residuals, color="black", label="Residuals")
+
+    # Formatting
+    ax.set_title("Plot of the residuals")
+    ax.set_ylabel("Value")
 
     ax.legend()
     # Show the plot
