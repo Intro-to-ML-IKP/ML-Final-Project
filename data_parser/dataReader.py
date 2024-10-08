@@ -1,12 +1,8 @@
-# Read stock data from API or folder into lists
-# Apply preprocessing of data if applicable
-# Apply train-test-val splits
 from datetime import datetime, timedelta
-from stock_getter import Stock
-from sklearn.model_selection import train_test_split
+from data_parser.stockGetter import Stock
 
 class DataReader:
-    def __init__(self, stockName):
+    def __init__(self, stockName: str, enddate: str = "2024-09-01", interval: str = "1d"):
         """Initializes dataReader class for data of the last n days
         
         Parameters:
@@ -15,9 +11,11 @@ class DataReader:
             
         Returns:
         None"""
+        self._validate_date(enddate)
         self.stockName = stockName
         self.interval = "1d"
         self.enddate = "2024-09-01"
+        self.data = None
 
     def getData(self, nPoints=50, nSets=100):
         """Retrieves datasets of user-specified length based on interval, ensuring sufficient data points.
@@ -46,7 +44,7 @@ class DataReader:
             open, high, low, close = stock.get_data()
             
             # Combine into OHLC format
-            self.data = [(o, h, l, c) for o, h, l, c in zip(open, high, low, close)]
+            self.data = [(op, hi, lo, cl) for op, hi, lo, cl in zip(open, high, low, close)]
             
             # Check if we have enough data
             if len(self.data) >= required_data_points:
@@ -74,58 +72,31 @@ class DataReader:
         Returns:
         Data without labels
         Labels"""
-        allData = []
-        allLabels = []
-        for i in range(len(self.data)//nPoints):
-            data = self.data[i*nPoints:(i+1)*nPoints-labelSize]
-            label = self.data[(i+1)*nPoints-labelSize:(i+1)*nPoints]
-            allData.append(data)
-            allLabels.append(label)
-        self.data = allData
-        self.labels = allLabels
-        return self.data, self.labels
+        if self.data is not None:
+            allData = []
+            allLabels = []
+            for i in range(len(self.data)//nPoints):
+                data = self.data[i*nPoints:(i+1)*nPoints-labelSize]
+                label = self.data[(i+1)*nPoints-labelSize:(i+1)*nPoints]
+                allData.append(data)
+                allLabels.append(label)
+            self.data = allData
+            self.labels = allLabels
+            return self.data, self.labels
+        else:
+            print(
+                "There is no data to get the Labels of."
+                f"Running the getData() method first with nPoints={nPoints} and nSets=100 ..."
+                )
+            self.getData(nPoints, 100)
+            self.getLabels(nPoints, labelSize)
 
-    def preprocess(self):
-        """Preprocesses the data
-        
-        Returns:
-        preprocessed data"""
-        # Add preprocessing steps here
-        return self.data
-    
-    
-    def split_data(self, train_size=0.7, val_size=0.15):
-        """Applies a train, test, validation split on the data and labels.
-        
-        Parameters:
-        X           (list)  - The input data
-        y           (list)  - The input labels
-        train_size  (float) - Percentage of total data used for training
-        val_size    (float) - Percentage of total data used for validation
-        
-        Returns:
-        training data + labels
-        validation data + labels
-        testing data + labels"""
-
-        X = self.data 
-        y = self.labels
-        test_size = 1 - train_size - val_size
-        # Step 1: Split the data into train+val and test sets
-        X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=test_size)
-
-        # Step 2: Split the train+val set into training and validation sets
-        val_ratio = val_size / (train_size + val_size)  # Adjust val_size proportionally
-        X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=val_ratio)
-
-        self.training_data = X_train
-        self.training_labels = y_train
-        self.validation_data = X_val
-        self.validation_labels = y_val
-        self.testing_data = X_test
-        self.testing_labels = y_test
-        return X_train, X_val, X_test, y_train, y_val, y_test
-
-    
-
-        
+    def _validate_date(self, date):
+        if not isinstance(date, str):
+            raise TypeError(
+                "You must provide type=`str` as date in the form:"
+                f" yyyy-mm-dd. You provided: type=`{type(date)}`")
+        try:
+            datetime.strptime(date, '%Y-%m-%d')
+        except TypeError("The date must be of the form `yyyy-mm-dd`!") as e:
+            raise e

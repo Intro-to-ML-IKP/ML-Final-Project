@@ -27,18 +27,9 @@ class Stock:
         """The method returns the closing stock prices from the `Stock` data.
         :return: The closing data
         """
-        # 'Close', 'High', 'Low', 'Open', 'T', 'Volume'
-        return self.stock['Open'], self.stock['High'], self.stock['Low'], self.stock['Close']
-
-    # def meanReturns_and_std(self):
-    #     """
-    #     This function calculates the mean returns and standard deviation of returns for a given dataset.
-    #     :return: The function `meanReturns_and_std` is returning the mean returns and the standard
-    #     deviation of the returns for the given interval.
-    #     """
-    #     data = self.stock['Close']
-    #     returns = data.pct_change()
-    #     standard_deviation = returns.std()
-    #     meanReturns = returns.mean()
-    #     return meanReturns, standard_deviation
+        return (
+            self.stock['Open'],
+            self.stock['High'],
+            self.stock['Low'],
+            self.stock['Close'])
     

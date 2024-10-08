@@ -1,7 +1,7 @@
 # Main program
-from dataReader import DataReader
-from network import train_stock_predictor, load_stock_predictor, test_stock_predictor, analyze_trend
-from visualize import plot_candlestick
+from data_parser.dataReader import DataReader
+from neuralNetwork.network import train_stock_predictor, load_stock_predictor, test_stock_predictor, analyze_trend
+from visualisation.visualize import plot_candlestick
 import numpy as np
 
 def reshape_data(data):
@@ -76,4 +76,6 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     
 
 if __name__ == "__main__":
-    main("AAPL", 5, 10, 3, 0.8, 0.1, [128, 64, 32], "relu", 0.001, 32, 50)
+    #main("AAPL", 5, 10, 3, 0.8, 0.1, [128, 64, 32], "relu", 0.001, 32, 50)
+    date = "2000-01-24"
+    print(date.split("-")[0])
