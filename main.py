@@ -7,8 +7,6 @@ import numpy as np
 def reshape_data(data):
     return [np.array(candlestick).flatten() for candlestick in data]
 
-def reshape_labels
-
 def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, networkStructure, activationFunction, learning_rate, batch_size, epochs):
     """Trains a model on a specified stock to predict the next prices
     
