@@ -9,7 +9,7 @@ class PlotStocks:
             residuals: list[float] = None,
             sma_length: int = 3
             ):
-        self.high, self.low, self.open_, self.close = list(zip(*stockData))
+        self.open_, self.high, self.low, self.close = list(zip(*stockData))
         self.sma = sma
         self.sma_length = sma_length
         self.extrapolated_sma = extrapolated_sma
@@ -47,13 +47,15 @@ class PlotStocks:
         # Candlestick plotting
         for i in range(num_data):
             # Plot the line between high and low (the wick)
-            ax.plot([days[i], days[i]], [self.low[i], self.high[i]], color='black')
+            ax.plot([days[i], days[i]], [self.high[i], self.low[i]], color='black')
 
             # Determine the color based on the open and close prices
-            color = 'green' if self.close[i] >= self.open_[i] else 'red'
-
+            color = 'green' if self.close[i] > self.open_[i] else 'red'
+            print("open", "high", "low", "close")
+            print(self.open_[i], self.high[i], self.low[i], self.close[i])
+            print(color)
             # Plot the rectangle (the body) between open and close
-            ax.add_patch(plt.Rectangle((days[i] - 0.2, self.open_[i]), 0.4, abs(self.close[i] - self.open_[i]), facecolor=color))
+            ax.add_patch(plt.Rectangle((days[i] - 0.2, self.open_[i]), 0.4, abs(self.close[i] - self.open_[i]), color=color))
 
         if simpleMovingAverage:
             self._plot_sma(ax, days)

@@ -41,10 +41,10 @@ class DataReader:
         while attempts < max_attempts:
             # Retrieve data
             stock = Stock(self.stockName, startdate, self.enddate, self.interval)
-            open, high, low, close = stock.get_data()
+            open_, high, low, close = stock.get_data()
             
             # Combine into OHLC format
-            self.data = [(op, hi, lo, cl) for op, hi, lo, cl in zip(open, high, low, close)]
+            self.data = [(op, hi, lo, cl) for op, hi, lo, cl in zip(open_, high, low, close)]
             
             # Check if we have enough data
             if len(self.data) >= required_data_points:
