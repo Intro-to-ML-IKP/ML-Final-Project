@@ -6,10 +6,10 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 # Import NN tools
-from neuralnetwork.losses import *
-from neuralnetwork.network import Network
-from neuralnetwork.dense import Dense
-from neuralnetwork.activations import Tanh, Sigmoid
+from neuralNetwork.losses import *
+from neuralNetwork.network import Network
+from neuralNetwork.dense import Dense
+from neuralNetwork.activations import Tanh, Sigmoid
 
 def reshape_data(data):
     return [np.array(candlestick).flatten() for candlestick in data]
@@ -26,7 +26,7 @@ def testing_SMA():
 
     SMA = sets_SMA[0]       # SMA of closing price
 
-    extrapolation_SMA = processor.extrapolate_the_SMA(SMA, 10, -2)  # Extrapolates Simple Moving Average 10 points into the future, starting from index -2
+    extrapolation_SMA = processor.extrapolate_the_SMA(SMA, 10, 0)  # Extrapolates Simple Moving Average 10 points into the future, starting from index -2
 
     residuals = processor.calculate_residuals(SMA)                  # Subtracts the SMA from the closing prices
 
@@ -67,7 +67,7 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
         processor = DataProcessor(sD, None)
         closing_SMA = processor.calculate_SMA()[0]              # We lose 2 values here
         residuals = processor.calculate_residuals(closing_SMA)                  # Subtracts the SMA from the closing prices, this will be used in the network
-        extrapolation_SMA = processor.extrapolate_the_SMA(closing_SMA, labelsPerSet+2, -2)  # Extrapolates Simple Moving Average [labelsPerSet] points into the future
+        extrapolation_SMA = processor.extrapolate_the_SMA(closing_SMA, labelsPerSet, 0)  # Extrapolates Simple Moving Average [labelsPerSet] points into the future
         allResiduals.append(residuals)
         allExtrapolations.append(extrapolation_SMA)
 
@@ -126,6 +126,6 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     
 
 if __name__ == "__main__":
-    main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50)
-    # testing_SMA()
+    #main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50)
+    testing_SMA()
     

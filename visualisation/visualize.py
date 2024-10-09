@@ -53,7 +53,7 @@ class PlotStocks:
             color = 'green' if self.close[i] >= self.open_[i] else 'red'
 
             # Plot the rectangle (the body) between open and close
-            ax.add_patch(plt.Rectangle((days[i] - 0.2, self.open_[i]), 0.4, self.close[i] - self.open_[i], color=color))
+            ax.add_patch(plt.Rectangle((days[i] - 0.2, self.open_[i]), 0.4, abs(self.close[i] - self.open_[i]), facecolor=color))
 
         if simpleMovingAverage:
             self._plot_sma(ax, days)
