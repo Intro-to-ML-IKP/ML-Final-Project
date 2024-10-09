@@ -62,7 +62,7 @@ class DataReader:
         raise ValueError(f"Unable to retrieve sufficient data after {max_attempts} attempts.")
 
     
-    def getLabels(self, nPoints=50, labelSize=5):
+    def getLabels(self, inputData, nPoints=50, labelSize=5):
         """Get the labels, thus next labelSize candlesticks, and split them from the datapoints
         
         Parameters:
@@ -72,12 +72,12 @@ class DataReader:
         Returns:
         Data without labels
         Labels"""
-        if self.data is not None:
+        if inputData is not None:
             allData = []
             allLabels = []
-            for i in range(len(self.data)//nPoints):
-                data = self.data[i*nPoints:(i+1)*nPoints-labelSize]
-                label = self.data[(i+1)*nPoints-labelSize:(i+1)*nPoints]
+            for i in range(len(inputData)//nPoints):
+                data = inputData[i*nPoints:(i+1)*nPoints-labelSize]
+                label = inputData[(i+1)*nPoints-labelSize:(i+1)*nPoints]
                 allData.append(data)
                 allLabels.append(label)
             self.data = allData
@@ -91,6 +91,14 @@ class DataReader:
             self.getData(nPoints, 100)
             self.getLabels(nPoints, labelSize)
 
+    def splitLabels(self, inputData, labelSize=5):
+        allData = []
+        allLabels = []
+        for set in inputData:
+            allData.append(set[:-labelSize])
+            allLabels.append(set[-labelSize:])
+        return allData, allLabels
+
     def _validate_date(self, date):
         if not isinstance(date, str):
             raise TypeError(
@@ -100,3 +108,11 @@ class DataReader:
             datetime.strptime(date, '%Y-%m-%d')
         except TypeError("The date must be of the form `yyyy-mm-dd`!") as e:
             raise e
+        
+    def splitSets(self, inputData, pointsPerSet):
+        allData = []
+        for i in range(len(inputData)//pointsPerSet):
+            data = inputData[i*pointsPerSet:(i+1)*pointsPerSet]
+            allData.append(data)
+        self.data = allData
+        return self.data

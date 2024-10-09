@@ -1,9 +1,15 @@
 # Main program
 from data_parser.dataReader import DataReader
 from data_parser.dataProcessor import DataProcessor
-from neuralNetwork.network import train_stock_predictor, load_stock_predictor, test_stock_predictor, analyze_trend
-from visualisation.visualize import PlotStocks#plot_candlestick, plot_residuals
+from visualisation.visualize import PlotStocks  #plot_candlestick, plot_residuals
 import numpy as np
+from sklearn.model_selection import train_test_split
+
+# Import NN tools
+from neuralnetwork.losses import *
+from neuralnetwork.network import Network
+from neuralnetwork.dense import Dense
+from neuralnetwork.activations import Tanh, Sigmoid
 
 def reshape_data(data):
     return [np.array(candlestick).flatten() for candlestick in data]
@@ -18,23 +24,23 @@ def testing_SMA():
 
     sets_SMA = processor.calculate_SMA()
 
-    SMA = sets_SMA[0]
+    SMA = sets_SMA[0]       # SMA of closing price
 
-    extrapolation_SMA = processor.extrapolate_the_SMA(SMA, 10, -2)
+    extrapolation_SMA = processor.extrapolate_the_SMA(SMA, 10, -2)  # Extrapolates Simple Moving Average 10 points into the future, starting from index -2
 
-    residuals = processor.calculate_residuals(SMA)
+    residuals = processor.calculate_residuals(SMA)                  # Subtracts the SMA from the closing prices
 
     plotter = PlotStocks(stock_data, SMA, extrapolation_SMA, residuals)
 
-    # plotter.plot_candlestick(simpleMovingAverage=True)    # If you want to plot only the candlesticks
+    # # plotter.plot_candlestick(simpleMovingAverage=True)    # If you want to plot only the candlesticks
 
-    # plotter.plot_residuals()                              # If you want to plot only the residuals
+    plotter.plot_residuals()                              # If you want to plot only the residuals
 
-    # Master Plot
+    # # Master Plot
     plotter.masterPlot()
 
 
-def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, networkStructure, activationFunction, learning_rate, batch_size, epochs):
+def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, learning_rate, epochs):
     """Trains a model on a specified stock to predict the next prices
     
     Parameters:
@@ -44,33 +50,49 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     labelsPerSet            - The number of labels per set to be subtracted from pointsPerSet. Will also be the amount of points predicted
     testingPercentage       - The percentage of data chunks to be used for testing
     validationPercentage    - The percentage of data chunks to be used for validation
-    networkStructure        - List containing the amount of neurons in hidden layers
     activationFunction      - Activation function for hidden layers
     learning_rate           - Learning rate for the optimizer
-    batch_size              - Number of chunks of data used for training
     epochs                  - Number of iterations of training performed
     
     Returns:
     None"""
     dR = DataReader(stockCode)                                  # Initialize for AAPL stock
-    stock_data = dR.getData(pointsPerSet, numSets)              # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints
-    data, labels = dR.getLabels(pointsPerSet, labelsPerSet)     # Retrieve the labels of the next [labelsPerSet] datapoints for each set of [pointsPerSet] points, splitting data from labels
-    #data = dR.preprocess()                                      # Apply preproccesing on data if applicable
-    high, low, open_, close = list(zip(*stock_data))
-    plot_candlestick(high, low, open_, close)
+    stock_data = dR.getData(pointsPerSet+2, numSets)            # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints. +2 because we will lose those with the SMAs
+    sets = dR.splitSets(stock_data, pointsPerSet+2)               # Splits the stock data into sets for the processor
+
+    # Apply preprocessing to get SMA and residuals
+    allResiduals = []
+    allExtrapolations = []
+    for sD in sets:
+        processor = DataProcessor(sD, None)
+        closing_SMA = processor.calculate_SMA()[0]              # We lose 2 values here
+        residuals = processor.calculate_residuals(closing_SMA)                  # Subtracts the SMA from the closing prices, this will be used in the network
+        extrapolation_SMA = processor.extrapolate_the_SMA(closing_SMA, labelsPerSet+2, -2)  # Extrapolates Simple Moving Average [labelsPerSet] points into the future
+        allResiduals.append(residuals)
+        allExtrapolations.append(extrapolation_SMA)
+
+    # Split the data from the labels
+    data, labels = dR.splitLabels(allResiduals, labelsPerSet)
+
     # Apply a train, test, validation split on the data
-    training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels = dR.split_data(testingPercentage, validationPercentage)
+    training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels = processor.split_data(data, labels, testingPercentage, validationPercentage)
 
-    # Set parameters
-    model_save_path = f"{stockCode}_model.keras"
 
-    xTrain = reshape_data(training_data)
-    print(len(xTrain))
-    print(xTrain)
+    # Train the model on training data
+    networkStructure = [                    # TODO add more dynamic network structure
+        Dense(len(training_data[0]), 8),
+        Tanh(),
+        Dense(8, labelsPerSet),
+        Tanh()
+    ]
+    network = Network(networkStructure, learning_rate=learning_rate)
+    errors = network.train(mse, mse_prime, training_data, training_labels, epochs=epochs, verbose = True)       # TODO add validation data in the network to avoid overfitting
+    network.saveNetwork("residualsv1")
 
-    yTrain = training_labels
-    print(len(yTrain))
-    print(yTrain)
+    # Test the model on testing data
+    for x, y in zip(testing_data, testing_labels):
+        output = network.predict(x)
+        print(f"Prediction: {output}\nLabels: {y}")
 
     return
 
@@ -104,6 +126,6 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     
 
 if __name__ == "__main__":
-    #main("AAPL", 5, 10, 3, 0.8, 0.1, [128, 64, 32], "relu", 0.001, 32, 50)
-    testing_SMA()
+    main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50)
+    # testing_SMA()
     

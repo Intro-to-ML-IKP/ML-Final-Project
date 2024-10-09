@@ -198,7 +198,7 @@ class DataProcessor:
         return rounded_data
 
     
-    def split_data(self, train_size=0.7, val_size=0.15):
+    def split_data(self, X, y, train_size=0.7, val_size=0.15):
         """Applies a train, test, validation split on the data and labels.
         
         Parameters:
@@ -212,8 +212,6 @@ class DataProcessor:
         validation data + labels
         testing data + labels"""
 
-        X = self._data 
-        y = self._labels
         test_size = 1 - train_size - val_size
         # Step 1: Split the data into train+val and test sets
         X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=test_size)
