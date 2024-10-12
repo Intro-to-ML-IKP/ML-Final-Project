@@ -226,4 +226,4 @@ class DataProcessor:
         self.validation_labels = y_val
         self.testing_data = X_test
         self.testing_labels = y_test
-        return X_train, X_val, X_test, y_train, y_val, y_test
+        return np.array(X_train), np.array(X_val), np.array(X_test), np.array(y_train), np.array(y_val), np.array(y_test)

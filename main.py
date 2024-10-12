@@ -5,15 +5,8 @@ from visualisation.visualize import PlotStocks  #plot_candlestick, plot_residual
 import numpy as np
 from sklearn.model_selection import train_test_split
 from data_parser.stockGetter import Stock
-
-# Import NN tools
-from neuralNetwork.losses import *
-from neuralNetwork.network import Network
-from neuralNetwork.dense import Dense
-from neuralNetwork.activations import Tanh, Sigmoid
-
-def reshape_data(data):
-    return [np.array(candlestick).flatten() for candlestick in data]
+from network.network import Model
+from sklearn.metrics import mean_absolute_error
 
 def testing_SMA():
     dR = DataReader("AAPL")                                  # Initialize for AAPL stock
@@ -44,7 +37,12 @@ def testing_SMA():
     plotter.masterPlot()
 
 
-def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, learning_rate, epochs):
+def evaluateModel(model, testing_data, testing_labels):
+    predictions = model.predict(testing_data)
+    mae = mean_absolute_error(testing_labels, predictions)
+    return mae
+
+def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, learning_rate, epochs, batch_size):
     """Trains a model on a specified stock to predict the next prices
     
     Parameters:
@@ -57,6 +55,7 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     activationFunction      - Activation function for hidden layers
     learning_rate           - Learning rate for the optimizer
     epochs                  - Number of iterations of training performed
+    batch_size              - Number of data chunks used before updating the weights
     
     Returns:
     None"""
@@ -79,57 +78,21 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     data, labels = dR.splitLabels(allResiduals, labelsPerSet)
 
     # Apply a train, test, validation split on the data
-    training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels = processor.split_data(data, labels, testingPercentage, validationPercentage)
+    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = processor.split_data(data, labels, testingPercentage, validationPercentage)
 
+    # Make and train the model
+    model = Model([64, 32, 3], ["relu", "relu", "linear"], 7)
+    model.compileModel(learning_rate, "mse", ["mae"])
+    model.trainModel(training_data, training_labels, validation_data, validation_labels, epochs, batch_size)
 
-    # Train the model on training data
-    networkStructure = [                    # TODO add more dynamic network structure
-        Dense(len(training_data[0]), 8),
-        Tanh(),
-        Dense(8, labelsPerSet),
-        Tanh()
-    ]
-    network = Network(networkStructure, learning_rate=learning_rate)
-    errors = network.train(mse, mse_prime, training_data, training_labels, epochs=epochs, verbose = True)       # TODO add validation data in the network to avoid overfitting
-    network.saveNetwork("residualsv1")
+    # Evaluate on testing data
+    mae = evaluateModel(model, testing_data, testing_labels)
+    print(mae)
 
-    # Test the model on testing data
-    for x, y in zip(testing_data, testing_labels):
-        output = network.predict(x)
-        print(f"Prediction: {output}\nLabels: {y}")
-
-    return
-
-    # Train the model
-    model, history = train_stock_predictor(
-        X_train=list(reshape_data(training_data)), y_train=training_labels, 
-        X_val=reshape_data(validation_data), y_val=validation_labels, 
-        n=(pointsPerSet - labelsPerSet), 
-        k=labelsPerSet, 
-        hidden_layers=networkStructure, # Adjust hidden layers if necessary
-        activation=activationFunction,              # Choose the activation function
-        learning_rate=learning_rate,            # Adjust learning rate
-        batch_size=batch_size,                  # Adjust batch size
-        epochs=epochs,                      # Number of epochs for training
-        model_save_path=model_save_path
-    )
-
-    # Test the model on unseen data
-    model = load_stock_predictor(model_save_path)
-    predictions, test_loss = test_stock_predictor(model, reshape_data(testing_data), testing_labels)
-
-    # Analyze the trend in predictions
-    predicted_trends = analyze_trend(predictions)
-
-    print(f"Test Loss: {test_loss}")
-    print(f"Predicted trends: {predicted_trends[:5]}")  # Print the first few trends as a preview
-
-    # `predictions` contains the predicted closing prices, and `predicted_trends` 
-    # contains the trend analysis based on the predictions.
-    
-    
+    # Save model
+    model.model.save(f"models/{stockCode}_model.keras")
 
 if __name__ == "__main__":
-    #main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50)
-    testing_SMA()
+    main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)
+    # testing_SMA()
     
