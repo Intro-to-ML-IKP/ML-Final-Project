@@ -59,18 +59,18 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     
     Returns:
     None"""
-    dR = DataReader(stockCode)                                  # Initialize for AAPL stock
-    stock_data = dR.getData(pointsPerSet+2, numSets)            # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints. +2 because we will lose those with the SMAs
-    sets = dR.splitSets(stock_data, pointsPerSet+2)               # Splits the stock data into sets for the processor
+    dR = DataReader(stockCode)                                      # Initialize for AAPL stock
+    stock_data = dR.getData(pointsPerSet+2, numSets)                # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints. +2 because we will lose those with the SMAs
+    sets = dR.splitSets(stock_data, pointsPerSet+2)                 # Splits the stock data into sets for the processor
 
     # Apply preprocessing to get SMA and residuals
     allResiduals = []
     allExtrapolations = []
     for sD in sets:
         processor = DataProcessor(sD, None)
-        closing_SMA = processor.calculate_SMA()[0]              # We lose 2 values here
-        residuals = processor.calculate_residuals(closing_SMA)                  # Subtracts the SMA from the closing prices, this will be used in the network
-        extrapolation_SMA = processor.extrapolate_the_SMA(closing_SMA, labelsPerSet, 0)  # Extrapolates Simple Moving Average [labelsPerSet] points into the future
+        closing_SMA = processor.calculate_SMA()[0]                                          # We lose 2 values here
+        residuals = processor.calculate_residuals(closing_SMA)                              # Subtracts the SMA from the closing prices, this will be used in the network
+        extrapolation_SMA = processor.extrapolate_the_SMA(closing_SMA, labelsPerSet, 0)     # Extrapolates Simple Moving Average [labelsPerSet] points into the future
         allResiduals.append(residuals)
         allExtrapolations.append(extrapolation_SMA)
 
@@ -81,13 +81,12 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = processor.split_data(data, labels, testingPercentage, validationPercentage)
 
     # Make and train the model
-    model = Model([64, 32, 3], ["relu", "relu", "linear"], 7)
+    model = Model([64, 32, labelsPerSet], ["relu", "relu", "linear"], pointsPerSet-labelsPerSet)
     model.compileModel(learning_rate, "mse", ["mae"])
     model.trainModel(training_data, training_labels, validation_data, validation_labels, epochs, batch_size)
 
     # Evaluate on testing data
     mae = evaluateModel(model, testing_data, testing_labels)
-    print(mae)
 
     # Save model
     model.model.save(f"models/{stockCode}_model.keras")
