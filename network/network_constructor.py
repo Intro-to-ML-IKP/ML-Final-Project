@@ -77,6 +77,9 @@ class NetworkConstructor:
 
 
 class NetworksDictMeta(type):
+    """
+    This class is the base metaclass for NetworksDict.
+    """
     def __call__(cls, *args, **kwargs) -> dict:
         """
         Allows the class to be called like a function.
