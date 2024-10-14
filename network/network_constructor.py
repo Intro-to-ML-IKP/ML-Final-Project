@@ -15,8 +15,8 @@ class NetworkConstructor:
     
     def build_model(
             self,
-            architecture: list[int] = [32, 16],
-            activations: list[str] = ["relu", "relu", "linear"],
+            architecture: list[int],
+            activations: list[str],
             learning_rate: float = 0.001,
             lossFunc: str = "mse",
             metrics: list[str] = ["mae"]
