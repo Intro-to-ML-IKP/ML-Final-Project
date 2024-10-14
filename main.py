@@ -3,6 +3,8 @@ from data_parser.dataReader import DataReader
 from data_parser.dataProcessor import DataProcessor
 from visualisation.visualize import PlotStocks  #plot_candlestick, plot_residuals
 from network.network import Model
+from network.parameterConstructor import ParameterConstructor
+from network.network_constructor import NetworkConstructor
 
 def testing_SMA():
     dR = DataReader("AAPL")                                  # Initialize for AAPL stock
@@ -32,23 +34,7 @@ def testing_SMA():
     # # Master Plot
     plotter.masterPlot()
 
-def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, learning_rate, epochs, batch_size):
-    """Trains a model on a specified stock to predict the next prices
-    
-    Parameters:
-    stockCode               - The code of the desired stock on the market
-    numSets                 - The number of total datasets to generate
-    pointsPerSet            - The number of datapoints + labels per set
-    labelsPerSet            - The number of labels per set to be subtracted from pointsPerSet. Will also be the amount of points predicted
-    testingPercentage       - The percentage of data chunks to be used for testing
-    validationPercentage    - The percentage of data chunks to be used for validation
-    activationFunction      - Activation function for hidden layers
-    learning_rate           - Learning rate for the optimizer
-    epochs                  - Number of iterations of training performed
-    batch_size              - Number of data chunks used before updating the weights
-    
-    Returns:
-    None"""
+def getData(stockCode: str, pointsPerSet: int, numSets: int, labelsPerSet: int, testingPercentage: float, validationPercentage: float):
     dR = DataReader(stockCode)                                      # Initialize for AAPL stock
     stock_data = dR.getData(pointsPerSet+2, numSets)                # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints. +2 because we will lose those with the SMAs                
     processor = DataProcessor(stock_data, None)
@@ -70,6 +56,26 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
 
     # Apply a train, test, validation split on the data
     training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = processor.split_data(data, labels, testingPercentage, validationPercentage)
+    return training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels
+
+def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, learning_rate, epochs, batch_size):
+    """Trains a model on a specified stock to predict the next prices
+    
+    Parameters:
+    stockCode               - The code of the desired stock on the market
+    numSets                 - The number of total datasets to generate
+    pointsPerSet            - The number of datapoints + labels per set
+    labelsPerSet            - The number of labels per set to be subtracted from pointsPerSet. Will also be the amount of points predicted
+    testingPercentage       - The percentage of data chunks to be used for testing
+    validationPercentage    - The percentage of data chunks to be used for validation
+    activationFunction      - Activation function for hidden layers
+    learning_rate           - Learning rate for the optimizer
+    epochs                  - Number of iterations of training performed
+    batch_size              - Number of data chunks used before updating the weights
+    
+    Returns:
+    None"""
+    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = getData(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
 
     # Make and train the model
     model = Model()
@@ -82,12 +88,32 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     
     print(mae)
     # Save model
-    #model.save_model(stockCode)
+    model.save_model(stockCode)
+
+def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage, maxEpochs):
+    # Generate arbitrary list of parameters
+    pConst = ParameterConstructor()
+    # pConst.calcNetworkArchitectures(2, 16, 32, 4)   # Just some sample numbers, check the code to find out what it does
+    # pConst.calcLearningRates(0.0001, 0.01, 0.0005)
+    # pConst.calcBatchSize(1,8,1)
+
+    # Less realistic values but this is for testing baby, relax
+    pConst.calcNetworkArchitectures(2, 16, 20, 4) 
+    pConst.calcLearningRates(0.001, 0.002, 0.001)
+    pConst.calcBatchSize(2,2,1)
+    pConst.calcParamList()  # 12 different parameter sets
+
+    # Evaluate the model 
+    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = getData(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
+    netConst = NetworkConstructor(len(training_data[0]), len(training_labels[0]), maxEpochs)
+    maes = netConst.explore_different_architectures(training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels, pConst.paramList)
+    print(maes)
+
 
 if __name__ == "__main__":
-    main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)
+    # main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)
     #testing_SMA()
     #model = Model()
     #model.load_model("AAPL")
     #print(model.model_summary())
-    
+    testNetworkConstructor("AAPL", 10, 5, 3, 0.8, 0.1, 50)
