@@ -4,7 +4,8 @@ from data_parser.dataProcessor import DataProcessor
 from visualisation.visualize import PlotStocks  #plot_candlestick, plot_residuals
 from network.network import Model
 from network.parameterConstructor import ParameterConstructor
-from network.network_constructor import NetworkConstructor
+from network.network_constructor import NetworkConstructor, NetworksDict
+
 
 def testing_SMA():
     dR = DataReader("AAPL")                                  # Initialize for AAPL stock
@@ -106,9 +107,8 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     # Evaluate the model 
     training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = getData(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
     netConst = NetworkConstructor(len(training_data[0]), len(training_labels[0]), maxEpochs)
-    maes = netConst.explore_different_architectures(training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels, pConst.paramList)
-    print(maes)
-
+    netConst.explore_different_architectures(training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels, pConst.paramList)
+    maes = NetworksDict()
 
 if __name__ == "__main__":
     # main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)

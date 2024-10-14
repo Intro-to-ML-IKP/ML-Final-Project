@@ -1,6 +1,8 @@
 from network.network import Model
 
 class NetworkConstructor:
+    results = []
+
     def __init__(self, input_size: int, output_size: int, epochs: int):
         """Initializes parameters used throughout the class
         
@@ -11,7 +13,6 @@ class NetworkConstructor:
         self.input_size = input_size
         self.output_size = output_size
         self.epochs = epochs
-        #self._results = []
     
     def build_model(
             self,
@@ -59,8 +60,6 @@ class NetworkConstructor:
         
         Returns:
         allErrors   (list[list[float, tuple[list[int], float, int]]])   - All maes of every parameter combination with the accompanying parameter combination"""
-
-        allErrors = []
         for paramSet in paramList:
             architecture, learning_rate, batch_size = paramSet
 
@@ -74,54 +73,51 @@ class NetworkConstructor:
 
             # Evaluate the model
             mae = self.model.compute_mae(testing_data, testing_labels)
-            allErrors.append([mae, paramSet])
+            self.results.append([mae, paramSet])
 
-        return allErrors
 
+class NetworksDictMeta(type):
+    def __call__(cls, *args, **kwargs) -> dict:
+        """
+        Allows the class to be called like a function.
+        """
+        sorted_results = cls._sort_results()
+        for mae, params in sorted_results.items():
+            print(f"MAE: {mae}, Hidden Layers: {params[0]}; Learning Rate: {params[1]}; Batch Size: {params[2]}")
+        return cls._sort_results()
     
-    # def explore_different_architectures(
-    #         self,
-    #         training_data,
-    #         training_labels,
-    #         validation_data,
-    #         validation_labels,
-    #         neuron_variations: list[list[int]],
-    #         learning_rates: list[float],
-    #         batch_sizes: list[int]
-    #         ):
-    #     for neurons in neuron_variations:
-    #         for learning_rate in learning_rates:
-    #             for batch_size in batch_sizes:                    
-    #                 # Creating activation functions ["relu", "relu", ..., "linear"]
-    #                 activations = []
-    #                 for _ in range(len(neurons)):
-    #                     activations.append("relu")
-    #                 activations.append("linear")
+class NetworksDict(metaclass=NetworksDictMeta):
+    """
+    This metaclass is resposible for accessing the NetworkConstructor's attribute
+    results, convert the list to a dictionarry and orders it. It also prints a nice
+    human readable overview of the parameters of the Networks.
 
-    #                 # Build and train the model
-    #                 self.build_model(neurons_per_layer=neurons, activations = activations, learning_rate = learning_rate)
-    #                 self.model.trainModel(training_data, training_labels, validation_data, validation_labels, self.epochs, batch_size)
+    :call: Prints a human readable sorted NNs with their parameters.
+    :return: A sorted dictionary of the results parameter in the class
+    NetworkConstructor.
+    """
+    @classmethod
+    def _list_to_dict(self) -> dict:
+        """
+        Gets the NetworkConstructor's results and makes them into a dictionary.
+        """
+        nnDict = {}
 
-    #                 # Compute the mae on the training data
-    #                 mae = self.model.compute_mae(training_data, training_labels)
+        # Access the result list in NetworkConstructor
+        nn_results = NetworkConstructor.results
 
-    #                 # Create the architecutre in the form of a list
-    #                 architecture = [self.input_shape]
-    #                 architecture.append(neuron for neuron in neurons)
-    #                 architecture.append(self.output_shape)
+        # Create a dictionary with MAEs as keys and parameters as values
+        for mae, params in nn_results:
+            nnDict[mae] = params  # Store params associated with each MAE
+        return nnDict
 
-    #                 nn_to_append = [mae, architecture, learning_rate, batch_size]
-    #                 self.results.append(nn_to_append)
-                    
-    #                 # Append the results to key=mae as: 
-    #                 # [[input shape, all the hidden layers, output shape], learning_rate, batch_size]
-    #                 # self._results[mae] = [architecture, learning_rate, batch_size]
-
-    # def sort_results(self) -> dict:
-    #     """
-    #     Sort the results by the mae (smallest to largest)
-    #     """
-    #     sorted_keys = sorted(self._results.keys())
-    #     sorted_results = {key: self._results[key] for key in sorted_keys}
-    #     return sorted_results
+    @classmethod
+    def _sort_results(self) -> dict:
+        """
+        Sort the results by the mae (smallest to largest)
+        """
+        nnDict = self._list_to_dict()
+        sorted_keys = sorted(nnDict.keys())
+        sorted_results = {key: nnDict[key] for key in sorted_keys}
+        return sorted_results
     
