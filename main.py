@@ -62,7 +62,7 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     dR = DataReader(stockCode)                                      # Initialize for AAPL stock
     stock_data = dR.getData(pointsPerSet+2, numSets)                # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints. +2 because we will lose those with the SMAs                
     processor = DataProcessor(stock_data, None)
-    sets = processor.splitSets(stock_data, pointsPerSet+2) # Splits the stock data into sets for the processor
+    sets = processor.splitSets(stock_data, pointsPerSet+2)          # Splits the stock data into sets for the processor
 
     # Apply preprocessing to get SMA and residuals
     allResiduals = []
@@ -82,7 +82,8 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = processor.split_data(data, labels, testingPercentage, validationPercentage)
 
     # Make and train the model
-    model = Model([64, 32, labelsPerSet], ["relu", "relu", "linear"], pointsPerSet-labelsPerSet)
+    model = Model()
+    model.create_Sequential_model([64, 32, labelsPerSet], ["relu", "relu", "linear"], pointsPerSet-labelsPerSet)
     model.compileModel(learning_rate, "mse", ["mae"])
     model.trainModel(training_data, training_labels, validation_data, validation_labels, epochs, batch_size)
 
@@ -90,9 +91,12 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     mae = evaluateModel(model, testing_data, testing_labels)
 
     # Save model
-    model.model.save(f"models/{stockCode}_model.keras")
+    #model.save_model(stockCode)
 
 if __name__ == "__main__":
-    main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)
+    #main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)
     # testing_SMA()
+    model = Model()
+    model.load_model("AAPL")
+    print(model.model)
     

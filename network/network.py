@@ -1,13 +1,20 @@
 import numpy as np
 import tensorflow as tf
+from tensorflow import keras
 from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense # type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
 from tensorflow.keras.callbacks import EarlyStopping # type: ignore
 
 class Model:
-    def __init__(self, model_shape, activations, input_shape):
-        """Create the model architecture
+    def __init__(self):
+        """
+        Instantiates a model.
+        """
+        self.model = None
+
+    def create_Sequential_model(self, model_shape, activations, input_shape):
+        """Create the model architecture and sets the model attribute to that model.
 
         Parameters:
         Model shape     (list[float])   - The number of neurons in each layer
@@ -22,7 +29,7 @@ class Model:
 
         for nNeurons, activ in zip(model_shape[1:], activations[1:]):
             model.add(Dense(nNeurons, activation=activ))               # Second hidden layer with 32 units
-
+        
         self.model = model
 
     def compileModel(self, learning_rate, lossFunc, metrics):
@@ -35,6 +42,7 @@ class Model:
         
         Returns:
         None"""
+        self._model_validator()
         self.model.compile(optimizer=Adam(learning_rate=learning_rate), loss=lossFunc, metrics=metrics)
 
     def trainModel(self, training_data, training_labels, validation_data, validation_labels, epochs, batch_size):
@@ -50,8 +58,16 @@ class Model:
         
         Returns:
         None"""
-        early_stopping = EarlyStopping(monitor='val_loss', patience=4)     # Stops training when validation performance stops improving and thus prevents overfitting
-        self.model.fit(training_data, training_labels, epochs=epochs, batch_size=batch_size, validation_data=(validation_data, validation_labels), callbacks=[early_stopping])
+        self._model_validator()
+        early_stopping = EarlyStopping(monitor='val_loss', patience=4)  # Stops training when validation performance stops improving and thus prevents overfitting
+        self.model.fit(
+            training_data,
+            training_labels,
+            epochs=epochs,
+            batch_size=batch_size,
+            validation_data=(validation_data, validation_labels),
+            callbacks=[early_stopping]
+            )
 
     def predict(self, data):
         """Makes a prediction on the specified data using the trained model
@@ -61,6 +77,21 @@ class Model:
         
         Returns:
         predictions - Same shape of labels used for training, values based on input data"""
+        self._model_validator()
         predictions = self.model.predict(data)
         return predictions
 
+    def save_model(self, stockName: str):
+        self._model_validator()
+        self.model.save(f"models/{stockName}_model.keras")
+
+    def load_model(self, stockName: str):
+        try:
+            self.model = keras.models.load_model(f"models/{stockName}_model.keras")
+        except FileExistsError(f"No such Model named '{stockName}_model.keras' exists in the 'models' folder!") as e:
+            raise e
+
+    def _model_validator(self):
+        if self.model is None:
+            raise AttributeError("There is no Model!")
+        
