@@ -227,3 +227,19 @@ class DataProcessor:
         self.testing_data = X_test
         self.testing_labels = y_test
         return np.array(X_train), np.array(X_val), np.array(X_test), np.array(y_train), np.array(y_val), np.array(y_test)
+    
+    def splitLabels(self, inputData, labelSize=5):
+        allData = []
+        allLabels = []
+        for set in inputData:
+            allData.append(set[:-labelSize])
+            allLabels.append(set[-labelSize:])
+        return allData, allLabels
+    
+    def splitSets(self, inputData, pointsPerSet):
+        allData = []
+        for i in range(len(inputData)//pointsPerSet):
+            data = inputData[i*pointsPerSet:(i+1)*pointsPerSet]
+            allData.append(data)
+        self.data = allData
+        return self.data

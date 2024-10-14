@@ -35,7 +35,7 @@ class Model:
         
         Returns:
         None"""
-        self.model.compile(optimizer=Adam(learning_rate=learning_rate), loss=lossFunc, metrics=['mae'])
+        self.model.compile(optimizer=Adam(learning_rate=learning_rate), loss=lossFunc, metrics=metrics)
 
     def trainModel(self, training_data, training_labels, validation_data, validation_labels, epochs, batch_size):
         """Trains the model using specified training data and validation data.

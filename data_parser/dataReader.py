@@ -91,14 +91,6 @@ class DataReader:
             self.getData(nPoints, 100)
             self.getLabels(nPoints, labelSize)
 
-    def splitLabels(self, inputData, labelSize=5):
-        allData = []
-        allLabels = []
-        for set in inputData:
-            allData.append(set[:-labelSize])
-            allLabels.append(set[-labelSize:])
-        return allData, allLabels
-
     def _validate_date(self, date):
         if not isinstance(date, str):
             raise TypeError(
@@ -109,10 +101,3 @@ class DataReader:
         except TypeError("The date must be of the form `yyyy-mm-dd`!") as e:
             raise e
         
-    def splitSets(self, inputData, pointsPerSet):
-        allData = []
-        for i in range(len(inputData)//pointsPerSet):
-            data = inputData[i*pointsPerSet:(i+1)*pointsPerSet]
-            allData.append(data)
-        self.data = allData
-        return self.data

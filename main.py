@@ -60,8 +60,9 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     Returns:
     None"""
     dR = DataReader(stockCode)                                      # Initialize for AAPL stock
-    stock_data = dR.getData(pointsPerSet+2, numSets)                # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints. +2 because we will lose those with the SMAs
-    sets = dR.splitSets(stock_data, pointsPerSet+2)                 # Splits the stock data into sets for the processor
+    stock_data = dR.getData(pointsPerSet+2, numSets)                # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints. +2 because we will lose those with the SMAs                
+    processor = DataProcessor(stock_data, None)
+    sets = processor.splitSets(stock_data, pointsPerSet+2) # Splits the stock data into sets for the processor
 
     # Apply preprocessing to get SMA and residuals
     allResiduals = []
@@ -75,7 +76,7 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
         allExtrapolations.append(extrapolation_SMA)
 
     # Split the data from the labels
-    data, labels = dR.splitLabels(allResiduals, labelsPerSet)
+    data, labels = processor.splitLabels(allResiduals, labelsPerSet)
 
     # Apply a train, test, validation split on the data
     training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = processor.split_data(data, labels, testingPercentage, validationPercentage)
