@@ -6,6 +6,7 @@ from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense # type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
 from tensorflow.keras.callbacks import EarlyStopping # type: ignore
+from sklearn.metrics import mean_absolute_error
 
 class Model:
     def __init__(self):
@@ -14,7 +15,7 @@ class Model:
         """
         self.model = None
 
-    def create_Sequential_model(self, model_shape, activations, input_shape):
+    def create_sequential_model(self, model_shape, activations, input_shape):
         """Create the model architecture and sets the model attribute to that model.
 
         Parameters:
@@ -60,15 +61,15 @@ class Model:
         Returns:
         None"""
         self._model_validator()
-        early_stopping = EarlyStopping(monitor='val_loss', patience=4)  # Stops training when validation performance stops improving and thus prevents overfitting
+        #early_stopping = EarlyStopping(monitor='val_loss', patience=4)  # Stops training when validation performance stops improving and thus prevents overfitting
         self.model.fit(
             training_data,
             training_labels,
             epochs=epochs,
             batch_size=batch_size,
-            validation_data=(validation_data, validation_labels),
-            callbacks=[early_stopping]
-            )
+            validation_data=(validation_data, validation_labels))#,
+            #callbacks=[early_stopping]
+            #)
 
     def predict(self, data):
         """Makes a prediction on the specified data using the trained model
@@ -81,6 +82,11 @@ class Model:
         self._model_validator()
         predictions = self.model.predict(data)
         return predictions
+    
+    def compute_mae(self, testing_data, testing_labels):
+        predictions = self.predict(testing_data)
+        mae = mean_absolute_error(testing_labels, predictions)
+        return mae
     
     def model_summary(self) -> Any:
         """

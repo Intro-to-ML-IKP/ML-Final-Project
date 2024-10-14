@@ -2,11 +2,7 @@
 from data_parser.dataReader import DataReader
 from data_parser.dataProcessor import DataProcessor
 from visualisation.visualize import PlotStocks  #plot_candlestick, plot_residuals
-import numpy as np
-from sklearn.model_selection import train_test_split
-from data_parser.stockGetter import Stock
 from network.network import Model
-from sklearn.metrics import mean_absolute_error
 
 def testing_SMA():
     dR = DataReader("AAPL")                                  # Initialize for AAPL stock
@@ -35,12 +31,6 @@ def testing_SMA():
 
     # # Master Plot
     plotter.masterPlot()
-
-
-def evaluateModel(model, testing_data, testing_labels):
-    predictions = model.predict(testing_data)
-    mae = mean_absolute_error(testing_labels, predictions)
-    return mae
 
 def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, learning_rate, epochs, batch_size):
     """Trains a model on a specified stock to predict the next prices
@@ -83,13 +73,14 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
 
     # Make and train the model
     model = Model()
-    model.create_Sequential_model([64, 32, labelsPerSet], ["relu", "relu", "linear"], pointsPerSet-labelsPerSet)
+    model.create_sequential_model([27, labelsPerSet], ["relu", "linear"], pointsPerSet-labelsPerSet)
     model.compileModel(learning_rate, "mse", ["mae"])
     model.trainModel(training_data, training_labels, validation_data, validation_labels, epochs, batch_size)
 
     # Evaluate on testing data
-    mae = evaluateModel(model, testing_data, testing_labels)
-
+    mae = model.compute_mae(testing_data, testing_labels)
+    
+    print(mae)
     # Save model
     #model.save_model(stockCode)
 
