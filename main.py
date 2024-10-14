@@ -94,9 +94,9 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     #model.save_model(stockCode)
 
 if __name__ == "__main__":
-    #main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)
-    # testing_SMA()
-    model = Model()
-    model.load_model("AAPL")
-    print(model.model)
+    main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)
+    #testing_SMA()
+    #model = Model()
+    #model.load_model("AAPL")
+    #print(model.model_summary())
     

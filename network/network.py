@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Any
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.models import Sequential # type: ignore
@@ -80,18 +81,43 @@ class Model:
         self._model_validator()
         predictions = self.model.predict(data)
         return predictions
+    
+    def model_summary(self) -> Any:
+        """
+        Returns the summary of the model.
+        """
+        self._model_validator()
+        return self.model.summary()
 
     def save_model(self, stockName: str):
+        """
+        Saves the model.
+
+        :param stockName: the name of the file to be saved.
+        The name is created and is going to look like: 'stockName_model.keras'
+        and is going to be stored in the models folder.
+        """
         self._model_validator()
         self.model.save(f"models/{stockName}_model.keras")
 
     def load_model(self, stockName: str):
+        """
+        Loads a model from the models folder.
+
+        :param stockName: the name of the file to be loaded.
+        The name of the file by convetion is: 'stockName_model.keras'
+        and is going to be loaded from the models folder.
+        If the file doesn't exists it will raise an exception.
+        """
         try:
             self.model = keras.models.load_model(f"models/{stockName}_model.keras")
         except FileExistsError(f"No such Model named '{stockName}_model.keras' exists in the 'models' folder!") as e:
             raise e
 
     def _model_validator(self):
+        """
+        Validates if there is a model instantiated.
+        """
         if self.model is None:
             raise AttributeError("There is no Model!")
         

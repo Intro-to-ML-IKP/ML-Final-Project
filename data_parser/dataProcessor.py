@@ -214,18 +214,20 @@ class DataProcessor:
 
         test_size = 1 - train_size - val_size
         # Step 1: Split the data into train+val and test sets
-        X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=test_size)
+        X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=test_size, shuffle=False)
 
         # Step 2: Split the train+val set into training and validation sets
         val_ratio = val_size / (train_size + val_size)  # Adjust val_size proportionally
-        X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=val_ratio)
+        X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=val_ratio, shuffle=False)
 
-        self.training_data = X_train
-        self.training_labels = y_train
-        self.validation_data = X_val
-        self.validation_labels = y_val
-        self.testing_data = X_test
-        self.testing_labels = y_test
+
+        ############### POSSIBLY USLESS ###############
+        # self.training_data = X_train
+        # self.training_labels = y_train
+        # self.validation_data = X_val
+        # self.validation_labels = y_val
+        # self.testing_data = X_test
+        # self.testing_labels = y_test
         return np.array(X_train), np.array(X_val), np.array(X_test), np.array(y_train), np.array(y_val), np.array(y_test)
     
     def splitLabels(self, inputData, labelSize=5):
