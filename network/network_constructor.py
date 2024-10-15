@@ -28,9 +28,9 @@ class NetworkConstructor:
         # self.model.create_sequential_model(neurons_per_layer, activations, self.input_shape)
         # self.model.compileModel(learning_rate, lossFunc, metrics)
 
-        architecture.append(self.output_size)
+        # architecture.append(self.output_size)
         model = Model()
-        model.create_sequential_model(architecture, activations, self.input_size)
+        model.create_sequential_model(architecture, activations, self.input_size, self.output_size)
         model.compileModel(learning_rate, lossFunc, metrics)
         return model
 

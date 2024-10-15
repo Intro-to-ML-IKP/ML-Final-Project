@@ -15,13 +15,14 @@ class Model:
         """
         self.model = None
 
-    def create_sequential_model(self, model_shape, activations, input_shape):
+    def create_sequential_model(self, model_shape, activations, input_shape, output_size):
         """Create the model architecture and sets the model attribute to that model.
 
         Parameters:
-        Model shape     (list[float])   - The number of neurons in each layer
+        model_shape     (list[float])   - The number of neurons in each layer
         activations     (list[string])  - The activation used for each layer
         input_shape     (int)           - The number of datapoints used for input
+        output_size     (int)           - The number of neurons in output
         
         Returns:
         None"""
@@ -29,8 +30,10 @@ class Model:
 
         model.add(Dense(model_shape[0], input_dim=input_shape, activation=activations[0]))  # Input layer (n=7), hidden layer with 64 units
 
-        for nNeurons, activ in zip(model_shape[1:], activations[1:]):
+        for nNeurons, activ in zip(model_shape[1:], activations[1:-1]):
             model.add(Dense(nNeurons, activation=activ))               # Second hidden layer with 32 units
+            
+        model.add(Dense(output_size, activation=activations[-1]))
         
         self.model = model
 
