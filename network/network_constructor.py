@@ -1,4 +1,6 @@
 from network.network import Model
+import os
+import pickle
 
 class NetworkConstructor:
     results = []
@@ -87,7 +89,7 @@ class NetworksDictMeta(type):
         sorted_results = cls._sort_results()
         for mae, params in sorted_results.items():
             print(f"MAE: {mae}, Hidden Layers: {params[0]}; Learning Rate: {params[1]}; Batch Size: {params[2]}")
-        return cls._sort_results()
+        return sorted_results
     
 class NetworksDict(metaclass=NetworksDictMeta):
     """
@@ -123,4 +125,80 @@ class NetworksDict(metaclass=NetworksDictMeta):
         sorted_keys = sorted(nnDict.keys())
         sorted_results = {key: nnDict[key] for key in sorted_keys}
         return sorted_results
+    
+
+class ResultsHandler:
+    """
+    This class is used to handle saving and loading of results.
+    """
+    def __init__(self, results: dict = None):
+        self._results = results
+
+    @property
+    def results(self) -> dict:
+        """
+        Used to retrieve the results.
+
+        :return: the results for the different networks
+        :rtype: dict
+        """
+        return self._results
+
+    def save_results(self, filename: str):
+        """
+        Saving the dictionary to a file using pickle.
+
+        :param results: a dictionary of results
+        :results type: dict
+        :param filename: the name of the file to be saved
+        :filename type: str
+        """
+        filename = "network\\" + filename + ".pkl"
+        if self._results is not None:
+            if os.path.exists(filename):
+                self._options_if_file_exists(filename)
+            else:
+                with open(filename, "wb") as file:
+                    pickle.dump(self._results, file)
+                print(f"Results saved successfully in dir `{filename}.pkl`.")
+        else:
+            print("There aren't any results to save. The saving was unsuccessful.")
+
+    def load_results(self, filename: str):
+        """
+        Loading the dictionary from a pickle file.
+
+        :param filename: the name of the file to be loaded
+        :filename type: str
+        """
+        filename = "network\\" + filename + ".pkl"
+        if os.path.exists(filename):
+            with open(filename, "rb") as file:
+                loaded_data = pickle.load(file)
+            self._results = loaded_data
+            print("Results loaded successfully!")
+        else:
+            print(f"There is no dir `{filename}` found")
+
+    def _options_if_file_exists(self, filename: str):
+        """
+        This class method is used if you are tring to save a file with a name
+        that already exists in the directory. It prompts the user for actions.
+
+        :param filename: the name of the file
+        :type filename: str
+        """
+        user_input = input(
+            f"File with the name `{filename}` already exists!\n"
+            "Do you want to overwrite its contents? (y/n)\n"
+            )
+        if user_input == "y":
+            with open(f"network\\{filename}", "wb") as file:
+                pickle.dump(self._results, file)
+            print(f"The file `{filename}.pkl` has been overwriten with the current results.") 
+        elif user_input == "n":
+            user_input = input("Chose a different name without any `.suffix` at the end:\n")
+            return self.save_results(str(user_input))
+        else:
+            return self.save_results(filename)
     
