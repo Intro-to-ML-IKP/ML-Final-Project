@@ -1,15 +1,18 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib.dates as mdates
+from pandas.core.series import Series
+
 
 
 class PlotStocks:
     def __init__(
             self,
-            stockData: list[tuple[float,float,float,float]],
+            stockData: list[tuple[Series,Series,Series,Series,Series]],
             sma: list[float] = None,
             extrapolated_sma: list[float] = None,
             residuals: list[float] = None,
+            predicted_closing_prices: list[float] = None,
             sma_length: int = 3
             ):
         self.dates, self.open_, self.high, self.low, self.close = list(zip(*stockData))
@@ -17,14 +20,15 @@ class PlotStocks:
         self.sma_length = sma_length
         self.extrapolated_sma = extrapolated_sma
         self.residuals = residuals
+        self.predicted_closing_prices = predicted_closing_prices
         self.masterPlot_on = False
 
-    def masterPlot(self, simpleMovingAverage = True):
+    def masterPlot(self, simpleMovingAverage = True, predictedClosingPrices = False):
         self.masterPlot_on = True
         _, (ax, ax1) = plt.subplots(2, 1, figsize=(8, 6), gridspec_kw={'height_ratios': [3, 1]})
         
         # Create the Plots
-        self._plot_candlestick(ax, simpleMovingAverage)
+        self._plot_candlestick(ax, simpleMovingAverage, predictedClosingPrices)
         self._plot_residuals(ax1)
 
         # Adjust the spacing between subplots (increase hspace)
@@ -33,19 +37,19 @@ class PlotStocks:
         plt.show()
         self.masterPlot_on = False
 
-    def plot_candlestick(self, simpleMovingAverage = False, ax = None):
+    def plot_candlestick(self, simpleMovingAverage = False, predictedClosingPrices = False):
         _, ax = plt.subplots()
         
-        self._plot_candlestick(ax, simpleMovingAverage)
+        self._plot_candlestick(ax, simpleMovingAverage, predictedClosingPrices)
 
         plt.show()
 
-    def _plot_candlestick(self, ax, simpleMovingAverage = False):
+    def _plot_candlestick(self, ax, simpleMovingAverage = False, predictedClosingPrices = False):
         # Number of days
         num_data = len(self.high)
 
         # Create an array of index values to represent days
-        dates = self.dates#range(num_data)
+        dates = self.dates
         dates_numeric = mdates.date2num(dates)
 
         # Candlestick plotting
@@ -64,6 +68,9 @@ class PlotStocks:
         if simpleMovingAverage:
             self._plot_sma(ax, dates)
 
+        if predictedClosingPrices:
+            self._plot_predicted_closing_prices(ax)
+
         # Formatting
         ax.set_title("Stock Data")
         ax.set_ylabel('Price')
@@ -79,15 +86,11 @@ class PlotStocks:
             nr_days_extrapolated = len(self.extrapolated_sma)
             last_day = dates[-1]
 
-            #x_val_extrapolated_SMA = list(range(nr_days_extrapolated))
             future_dates = pd.bdate_range(start=last_day, periods=nr_days_extrapolated).tolist()
-
-            #x_val_extrapolated_SMA = [x + last_day for x in x_val_extrapolated_SMA]
             
             ax.plot(future_dates, self.extrapolated_sma, color = "yellow", label = f"Extrapolated SMA ({nr_days_extrapolated} days)")
 
-
-    def plot_residuals(self, ax1 = None):
+    def plot_residuals(self):
         """
         This method plots the residuals.
 
@@ -113,3 +116,28 @@ class PlotStocks:
         ax.set_ylabel("Value")
 
         ax.legend()
+
+    def plot_predicted_closing_prices(self):
+        _, ax = plt.subplots()
+
+        self._plot_predicted_closing_prices(ax)
+
+        plt.show()
+
+    def _plot_predicted_closing_prices(self, ax):
+        nr_days_extrapolated = len(self.predicted_closing_prices)
+        last_day = self.dates[-1]
+
+        future_dates = pd.bdate_range(start=last_day, periods=nr_days_extrapolated).tolist()
+
+        future_dates_numeric = mdates.date2num(future_dates)
+        
+        for predicted_closing_price in self.predicted_closing_prices:
+            ax.hlines(
+                predicted_closing_price,
+                future_dates_numeric - 0.2,
+                future_dates_numeric + 0.2,
+                color = "blue",
+                label = f"Predicted Closing Prices ({nr_days_extrapolated} days)"
+                )
+            

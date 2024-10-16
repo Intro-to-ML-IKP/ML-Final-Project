@@ -161,29 +161,28 @@ class DataProcessor:
             allLabels.append(set[-label_size:])
         return allData, allLabels
     
-    def generate_sets(self, pointsPerSet: int, stock_data: list[tuple[float,float,float,float]] = None):
+    def generate_sets(self, pointsPerSet: int) -> list:
         """
         Generates sets from the Stock data to be used in training. Usually this is used
         to compute SME and get the residuals in order to train a FFNN.
 
-        :param stock_data: the Open, High, Low, Close data of the stock. It is defaulted to None.
-        If nothing is passed it uses as default data the data used to initialise the DataProcessor.
-        That is also the **prefered use**!
-        :stock_data type: list[tuple[float,float,float,float]]
         :param pointsPerSet: the points per data set
         :pointsPerSet type: int
         """
-        # If no stock data is passed use the data used to initialise the class (Prefered use)
-        if stock_data is None:
-            stock_data = self._data
-
         allData = []
-        for i in range(len(stock_data)//pointsPerSet):
-            data = stock_data[i*pointsPerSet:(i+1)*pointsPerSet]
+        for i in range(len(self._data)//pointsPerSet):
+            data = self._data[i*pointsPerSet:(i+1)*pointsPerSet]
             allData.append(data)
         return allData
 
     def _unpack_data(self, data: list[tuple[str,float,float,float,float]]) -> None:
+        """
+        Unpacks the data and separates Date from the Stock Data.
+        Used in the instantiation of the Class
+
+        :param data: stock data containing (date, open, high, low, close) data.
+        :type data: list[tuple[str,float,float,float,float]]
+        """
         dates, open_, high, low, close = zip(*data)
         self._dates = dates
         data = [(op, hi, lo, cl) for op, hi, lo, cl in zip(open_, high, low, close)]
@@ -211,8 +210,6 @@ class DataProcessor:
         aligned_extrapolation = [x + delta for x in extrapolation]
 
         return aligned_extrapolation
-
-
     
     def _round_data(
             self, data: list[tuple[float, float, float, float]]
