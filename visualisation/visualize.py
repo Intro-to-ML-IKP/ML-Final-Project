@@ -1,4 +1,7 @@
 import matplotlib.pyplot as plt
+import pandas as pd
+import matplotlib.dates as mdates
+
 
 class PlotStocks:
     def __init__(
@@ -9,7 +12,7 @@ class PlotStocks:
             residuals: list[float] = None,
             sma_length: int = 3
             ):
-        self.open_, self.high, self.low, self.close = list(zip(*stockData))
+        self.dates, self.open_, self.high, self.low, self.close = list(zip(*stockData))
         self.sma = sma
         self.sma_length = sma_length
         self.extrapolated_sma = extrapolated_sma
@@ -42,12 +45,13 @@ class PlotStocks:
         num_data = len(self.high)
 
         # Create an array of index values to represent days
-        days = range(num_data)
+        dates = self.dates#range(num_data)
+        dates_numeric = mdates.date2num(dates)
 
         # Candlestick plotting
         for i in range(num_data):
             # Plot the line between high and low (the wick)
-            ax.plot([days[i], days[i]], [self.high[i], self.low[i]], color='black')
+            ax.plot([dates[i], dates[i]], [self.high[i], self.low[i]], color='black')
 
             # Determine the color based on the open and close prices
             color = 'green' if self.close[i] > self.open_[i] else 'red'
@@ -55,10 +59,10 @@ class PlotStocks:
             print(self.open_[i], self.high[i], self.low[i], self.close[i])
             print(color)
             # Plot the rectangle (the body) between open and close
-            ax.add_patch(plt.Rectangle((days[i] - 0.2, self.open_[i]), 0.4, abs(self.close[i] - self.open_[i]), color=color))
+            ax.add_patch(plt.Rectangle((dates_numeric[i] - 0.2, self.open_[i]), 0.4, abs(self.close[i] - self.open_[i]), color=color))
 
         if simpleMovingAverage:
-            self._plot_sma(ax, days)
+            self._plot_sma(ax, dates)
 
         # Formatting
         ax.set_title("Stock Data")
@@ -66,19 +70,21 @@ class PlotStocks:
 
         ax.legend()
 
-    def _plot_sma(self, ax, days):
+    def _plot_sma(self, ax, dates):
         # Delete the first n elements
-        x_val_SMA = days[self.sma_length-1:]
+        x_val_SMA = dates[self.sma_length-1:]
         ax.plot(x_val_SMA, self.sma, color="red", label = "SMA")
         if self.extrapolated_sma is not None:
             # Getting the x values for the days that the extrapolation happend
             nr_days_extrapolated = len(self.extrapolated_sma)
-            last_day = days[-1]
+            last_day = dates[-1]
 
-            x_val_extrapolated_SMA = list(range(nr_days_extrapolated))
-            x_val_extrapolated_SMA = [x + last_day for x in x_val_extrapolated_SMA]
+            #x_val_extrapolated_SMA = list(range(nr_days_extrapolated))
+            future_dates = pd.bdate_range(start=last_day, periods=nr_days_extrapolated).tolist()
+
+            #x_val_extrapolated_SMA = [x + last_day for x in x_val_extrapolated_SMA]
             
-            ax.plot(x_val_extrapolated_SMA, self.extrapolated_sma, color = "yellow", label = f"Extrapolated SMA ({nr_days_extrapolated} days)")
+            ax.plot(future_dates, self.extrapolated_sma, color = "yellow", label = f"Extrapolated SMA ({nr_days_extrapolated} days)")
 
 
     def plot_residuals(self, ax1 = None):
@@ -98,9 +104,9 @@ class PlotStocks:
         num_data = len(self.residuals)
         
         # Create an array of index values to represent days
-        days = range(num_data)
+        dates = self.dates[-num_data:]#range(num_data)
 
-        ax.plot(days, self.residuals, color="black", label="Residuals")
+        ax.plot(dates, self.residuals, color="black", label="Residuals")
 
         # Formatting
         ax.set_title("Plot of the residuals")

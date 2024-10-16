@@ -27,9 +27,13 @@ class Stock:
         """The method returns the closing stock prices from the `Stock` data.
         :return: The closing data
         """
+        # Getting the dates of the stock data
+        dates = self.stock.index
         return (
+            dates,
             self.stock['Open'],
             self.stock['High'],
             self.stock['Low'],
-            self.stock['Close'])
+            self.stock['Close']
+            )
     

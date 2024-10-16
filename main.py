@@ -35,25 +35,24 @@ def testing_SMA():
     # # Master Plot
     plotter.masterPlot()
 
-def getData(stockCode: str, pointsPerSet: int, numSets: int, labelsPerSet: int, testingPercentage: float, validationPercentage: float):
+def get_Data(stockCode: str, pointsPerSet: int, numSets: int, labelsPerSet: int, testingPercentage: float, validationPercentage: float):
     dR = DataReader(stockCode)                                      # Initialize for AAPL stock
     stock_data = dR.getData(pointsPerSet+2, numSets)                # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints. +2 because we will lose those with the SMAs                
     processor = DataProcessor(stock_data, None)
-    sets = processor.splitSets(stock_data, pointsPerSet+2)          # Splits the stock data into sets for the processor
+    sets = processor.generate_sets(pointsPerSet+2)          # Splits the stock data into sets for the processor
 
-    # Apply preprocessing to get SMA and residuals
+    # Get SMA and residuals
     allResiduals = []
     allExtrapolations = []
     for sD in sets:
-        processor = DataProcessor(sD, None)
-        closing_SMA = processor.calculate_SMA()[0]                                          # We lose 2 values here
-        residuals = processor.calculate_residuals(closing_SMA)                              # Subtracts the SMA from the closing prices, this will be used in the network
-        extrapolation_SMA = processor.extrapolate_the_SMA(closing_SMA, labelsPerSet, 0)     # Extrapolates Simple Moving Average [labelsPerSet] points into the future
+        SMA = processor.calculate_SMA(sD)                                          # We lose 2 values here
+        residuals = processor.calculate_residuals(sD, SMA)                              # Subtracts the SMA from the closing prices, this will be used in the network
+        extrapolation_SMA = processor.extrapolate_the_SMA(SMA, labelsPerSet)     # Extrapolates Simple Moving Average [labelsPerSet] points into the future
         allResiduals.append(residuals)
         allExtrapolations.append(extrapolation_SMA)
 
     # Split the data from the labels
-    data, labels = processor.splitLabels(allResiduals, labelsPerSet)
+    data, labels = processor.generate_labels(allResiduals, labelsPerSet)
 
     # Apply a train, test, validation split on the data
     training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = processor.split_data(data, labels, testingPercentage, validationPercentage)
@@ -76,7 +75,7 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     
     Returns:
     None"""
-    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = getData(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
+    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = get_Data(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
 
     # Make and train the model
     model = Model()
@@ -105,7 +104,7 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     pConst.calcParamList()  # 12 different parameter sets
 
     # Evaluate the model 
-    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = getData(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
+    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = get_Data(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
     netConst = NetworkConstructor(len(training_data[0]), len(training_labels[0]), maxEpochs)
     netConst.explore_different_architectures(training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels, pConst.paramList)
     maes = NetworksDict()
@@ -117,3 +116,4 @@ if __name__ == "__main__":
     #model.load_model("AAPL")
     #print(model.model_summary())
     testNetworkConstructor("AAPL", 10, 5, 3, 0.8, 0.1, 50)
+    pass

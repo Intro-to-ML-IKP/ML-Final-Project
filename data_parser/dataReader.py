@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from data_parser.stockGetter import Stock
+from pandas.core.series import Series
 
 class DataReader:
     def __init__(self, stockName: str, enddate: str = "2024-09-01", interval: str = "1d"):
@@ -17,7 +18,7 @@ class DataReader:
         self.enddate = "2024-09-01"
         self.data = None
 
-    def getData(self, nPoints=50, nSets=100):
+    def getData(self, nPoints=50, nSets=100) -> tuple[datetime, Series, Series, Series, Series]:
         """Retrieves datasets of user-specified length based on interval, ensuring sufficient data points.
         
         Parameters:
@@ -41,10 +42,11 @@ class DataReader:
         while attempts < max_attempts:
             # Retrieve data
             stock = Stock(self.stockName, startdate, self.enddate, self.interval)
-            open_, high, low, close = stock.get_data()
+            dates, open_, high, low, close = stock.get_data()
             
-            # Combine into OHLC format
-            self.data = [(op, hi, lo, cl) for op, hi, lo, cl in zip(open_, high, low, close)]
+            # Combine into DOHLC format
+            # (dates, open, high, low, close)
+            self.data = [(dat, op, hi, lo, cl) for dat, op, hi, lo, cl in zip(dates, open_, high, low, close)]
             
             # Check if we have enough data
             if len(self.data) >= required_data_points:
