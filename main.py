@@ -106,11 +106,21 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     # Evaluate the model 
     training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = get_Data(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
     netConst = NetworkConstructor(len(training_data[0]), len(training_labels[0]), maxEpochs)
-    netConst.explore_different_architectures(training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels, pConst.paramList[:2])
+    netConst.explore_different_architectures(training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels, pConst.paramList)
     maes = NetworksDict()
 
     results_handler = ResultsHandler(maes)
     results_handler.save_results("NN_results")
+
+def test_statistical_analysis():
+    results = ResultsHandler()
+    results.load_results("NN_results")
+    print("Correlation Coeficients:")
+    print(results.calculate_correlation_coefficients())
+    print("Regression Analysis:")
+    print(results.perform_regression_analysis())
+    results.create_scatterplot_matrix()
+    results.create_correlation_heatmap()
     
 if __name__ == "__main__":
     # main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)
@@ -118,5 +128,5 @@ if __name__ == "__main__":
     #model = Model()
     #model.load_model("AAPL")
     #print(model.model_summary())
-    testNetworkConstructor("AAPL", 10, 5, 3, 0.8, 0.1, 50)
-    pass
+    #testNetworkConstructor("AAPL", 10, 5, 3, 0.8, 0.1, 50)
+    test_statistical_analysis()
