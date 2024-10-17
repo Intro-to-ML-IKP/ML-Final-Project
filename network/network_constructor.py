@@ -11,7 +11,7 @@ import numpy as np
 from scipy.stats import pearsonr
 
 
-LIST_BB = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000]
+LIST_BB = list(range(1000, 1000001, 1000))
 
 class NetworkConstructor:
     results = []
