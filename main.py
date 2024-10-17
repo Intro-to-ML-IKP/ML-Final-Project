@@ -98,10 +98,11 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     # pConst.calcBatchSize(1,8,1)
 
     # Less realistic values but this is for testing baby, relax
-    pConst.calcNetworkArchitectures(2, 16, 20, 4) 
-    pConst.calcLearningRates(0.001, 0.002, 0.001)
-    pConst.calcBatchSize(2,2,1)
+    pConst.calcNetworkArchitectures(2, 2, 31, 1) 
+    pConst.calcLearningRates(0.001, 0.1, 0.1)
+    pConst.calcBatchSize(1,5,1)
     pConst.calcParamList()  # 12 different parameter sets
+    print(len(pConst.paramList))
 
     # Evaluate the model 
     training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = get_Data(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
@@ -114,13 +115,18 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
 
 def test_statistical_analysis():
     results = ResultsHandler()
-    results.load_results("NN_results")
+    results.load_results("NN_results_1000")
     print("Correlation Coeficients:")
-    print(results.calculate_correlation_coefficients())
+    mae_correlations, p_values = results.calculate_correlation_coefficients()
+    print(mae_correlations)
+    print("P-values:")
+    print(p_values)
     print("Regression Analysis:")
     print(results.perform_regression_analysis())
     results.create_scatterplot_matrix()
     results.create_correlation_heatmap()
+    param_ranges = results.get_parmeter_ranges()
+    print(param_ranges)
     
 if __name__ == "__main__":
     # main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)

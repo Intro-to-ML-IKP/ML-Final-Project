@@ -4,8 +4,14 @@ import pickle
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
+import gc
+from tensorflow.keras import backend as K
 from sklearn.linear_model import LinearRegression
 import numpy as np
+from scipy.stats import pearsonr
+
+
+LIST_BB = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000]
 
 class NetworkConstructor:
     results = []
@@ -67,6 +73,7 @@ class NetworkConstructor:
         
         Returns:
         allErrors   (list[list[float, tuple[list[int], float, int]]])   - All maes of every parameter combination with the accompanying parameter combination"""
+        count = 0
         for paramSet in paramList:
             architecture, learning_rate, batch_size = paramSet
 
@@ -81,6 +88,20 @@ class NetworkConstructor:
             # Evaluate the model
             mae = self.model.compute_mae(testing_data, testing_labels)
             self.results.append([mae, paramSet])
+
+            # Clear Keras session and free memory
+            K.clear_session()
+            del self.model
+            gc.collect()  # Force garbage collection
+            
+            count += 1
+
+            print(f"Now training the {count}th model, {9300-count} more to go.")
+
+            if count in LIST_BB:
+                maes = NetworksDict()
+                results_handler = ResultsHandler(maes)
+                results_handler.save_results(f"NN_results_{count}")
 
 
 class NetworksDictMeta(type):
@@ -194,10 +215,22 @@ class ResultsHandler:
         # Calculate the correlation matrix
         correlation_matrix = df.corr()
 
+        # Calculate p-values for each pair of features
+        p_values = pd.DataFrame(index=df.columns, columns=df.columns)
+
+        for col1 in df.columns:
+            for col2 in df.columns:
+                if col1 != col2:
+                    # Calculate the p-value
+                    _, p_val = pearsonr(df[col1], df[col2])
+                    p_values.loc[col1, col2] = p_val
+                else:
+                    p_values.loc[col1, col2] = None  # No p-value for self-correlation
+
         # Focusing on the correlation of parameters with MAE
         mae_correlations = correlation_matrix["MAES"].drop("MAES")
 
-        return mae_correlations
+        return mae_correlations, p_values
     
     def perform_regression_analysis(self):
         """
@@ -219,6 +252,36 @@ class ResultsHandler:
         param_importance = pd.DataFrame(coefficients, index=param_space.columns, columns=['Coefficient'])
 
         return param_importance
+    
+    def get_parmeter_ranges(self):
+        neuron_layer1 = self._get_min_max_parameter("Neurons Layer 1")
+        neuron_layer2 = self._get_min_max_parameter("Neurons Layer 2")
+        learning_rate = self._get_min_max_parameter("Learning Rate")
+        batch_size = self._get_min_max_parameter("Batch Size")
+        number_of_layers = self._get_min_max_parameter("Number of Layers")
+        maes = self._get_min_max_parameter("MAES")
+
+        data = {
+            "Neurons Layer 1": neuron_layer1,
+            "Neurons Layer 2": neuron_layer2,
+            "Learning Rate": learning_rate,
+            "Batch Size": batch_size,
+            "Number of Layers": number_of_layers,
+            "MAES": maes
+            }
+        
+        df = pd.DataFrame(data)
+        df = df.rename(index={0: "Max Value", 1: "Min Value", 2: "Expected Value (Mean)"})
+
+        return df
+
+    
+    def _get_min_max_parameter(self, parameters: str) -> list[float,float]:
+        df = self._generate_pd_dataframe()
+        max_val = df[parameters].max()
+        min_val = df[parameters].min()
+        expected_val = df[parameters].mean()
+        return [max_val, min_val, expected_val]
 
     def create_scatterplot_matrix(self):
         """
