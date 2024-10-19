@@ -217,6 +217,7 @@ class ResultsHandler:
     """
     def __init__(self, results: dict = None):
         self._results = results
+        self._df = None
 
     @property
     def results(self) -> dict:
@@ -260,15 +261,27 @@ class ResultsHandler:
             with open(filename, "rb") as file:
                 loaded_data = pickle.load(file)
             self._results = loaded_data
+            self._df = self._df
             print("Results loaded successfully!")
         else:
             print(f"There is no dir `{filename}` found")
+
+    def load_multiple_results(self, filenames: list[str]):
+        results = pd.DataFrame()
+        for filename in filenames:
+            self.load_results(filename)
+            df2 = self._generate_pd_dataframe()
+            self._results = None
+            results = pd.concat([results, df2], ignore_index=True)
+        print(results, type(results))
+        self._df = results
+        print(self._results, type(self._results))
 
     def calculate_correlation_coefficients(self):
         """
         Calculates the correlation coefficients between the parameters and MAE.
         """
-        df = self._generate_pd_dataframe()
+        df = self._df
 
         # Calculate the correlation matrix
         correlation_matrix = df.corr()
@@ -295,7 +308,7 @@ class ResultsHandler:
         Performs regression analysis by examining the relationship
         between the MAE and the rest of the parameters.
         """
-        df = self._generate_pd_dataframe()
+        df = self._df
 
         # Prepare the data
         param_space = df[["Neurons Layer 1", "Neurons Layer 2", "Learning Rate", "Batch Size", "Number of Layers"]]  # Features
@@ -335,7 +348,7 @@ class ResultsHandler:
 
     
     def _get_min_max_parameter(self, parameters: str) -> list[float,float]:
-        df = self._generate_pd_dataframe()
+        df = self._df
         max_val = df[parameters].max()
         min_val = df[parameters].min()
         expected_val = df[parameters].mean()
@@ -346,7 +359,7 @@ class ResultsHandler:
         Creates a scatterplot matrix and plots it.
         """
         # Generate the DataFrame
-        df = self._generate_pd_dataframe()
+        df = self._df
 
         # Create a scatterplot matrix using seaborn's pairplot
         # Using fill=True to avoid the deprecated shade warning
@@ -372,7 +385,7 @@ class ResultsHandler:
         Creates a correlation heatmap and plots it.
         """
         # Generate the DataFrame
-        df = self._generate_pd_dataframe()
+        df = self._df
 
         # Compute the correlation matrix
         corr_matrix = df.corr()
