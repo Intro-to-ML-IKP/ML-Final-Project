@@ -111,7 +111,7 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     maes = NetworksDict()
 
     results_handler = ResultsHandler(maes)
-    results_handler.save_results("NN_results_v2")
+    results_handler.save_results("NN_results_v3")
 
 def test_statistical_analysis():
     results = ResultsHandler()

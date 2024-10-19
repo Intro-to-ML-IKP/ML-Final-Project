@@ -64,9 +64,9 @@ class NetworkConstructor:
         self.results.append([mae, paramSet])
 
         # Clear Keras session and free memory
-        K.clear_session()
-        del self.model
-        gc.collect()  # Force garbage collection
+        # K.clear_session()
+        # del self.model
+        # gc.collect()  # Force garbage collection
 
         print(f"Now training the model {count}/{maxCount}")
 
@@ -102,7 +102,7 @@ class NetworkConstructor:
         Returns:
         allErrors   (list[list[float, tuple[list[int], float, int]]])   - All maes of every parameter combination with the accompanying parameter combination"""
         fullParamList = [(paramSet, count, len(paramList), training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels) for count,paramSet in enumerate(paramList)]
-        with Pool(processes=25) as p:
+        with Pool(processes=50) as p:
             p.map(self.helper, fullParamList)
 
     # def explore_different_architectures(
