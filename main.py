@@ -114,8 +114,9 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     results_handler.save_results("NN_results_v2")
 
 def test_statistical_analysis():
+    result_lists = ["NN_results_1000", "NN_results_2000", "NN_results_3000", "NN_results_4000"]
     results = ResultsHandler()
-    results.load_results("NN_results_v2")
+    results.load_multiple_results(result_lists)
     print("Correlation Coeficients:")
     mae_correlations, p_values = results.calculate_correlation_coefficients()
     print(mae_correlations)
