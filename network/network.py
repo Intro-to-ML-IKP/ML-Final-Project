@@ -64,15 +64,15 @@ class Model:
         Returns:
         None"""
         self._model_validator()
-        #early_stopping = EarlyStopping(monitor='val_loss', patience=4)  # Stops training when validation performance stops improving and thus prevents overfitting
+        early_stopping = EarlyStopping(monitor='val_loss', patience=4)  # Stops training when validation performance stops improving and thus prevents overfitting
         self.model.fit(
             training_data,
             training_labels,
             epochs=epochs,
             batch_size=batch_size,
-            validation_data=(validation_data, validation_labels))#,
-            #callbacks=[early_stopping]
-            #)
+            validation_data=(validation_data, validation_labels), 
+            callbacks=[early_stopping]
+        )
 
     def predict(self, data):
         """Makes a prediction on the specified data using the trained model

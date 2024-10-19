@@ -5,9 +5,9 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 import gc
-from tensorflow.keras import backend as K
+from tensorflow.keras import backend as K # type: ignore
 from sklearn.linear_model import LinearRegression
-import numpy as np
+from multiprocessing import Pool
 from scipy.stats import pearsonr
 
 
@@ -47,6 +47,34 @@ class NetworkConstructor:
         model.compileModel(learning_rate, lossFunc, metrics)
         return model
 
+    def helper(self, params):
+        paramSet, count, maxCount, training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels = params
+        architecture, learning_rate, batch_size = paramSet
+
+        # Create list of activation functions for the network, which will be relu for all but the output layer
+        activations = ["relu" for _ in range(len(architecture))]    
+        activations.append("linear")
+
+        # Create and train the model
+        self.model = self.build_model(architecture=architecture, activations=activations, learning_rate=learning_rate)
+        self.model.trainModel(training_data, training_labels, validation_data, validation_labels, self.epochs, batch_size)
+
+        # Evaluate the model
+        mae = self.model.compute_mae(testing_data, testing_labels)
+        self.results.append([mae, paramSet])
+
+        # Clear Keras session and free memory
+        K.clear_session()
+        del self.model
+        gc.collect()  # Force garbage collection
+
+        print(f"Now training the model {count}/{maxCount}")
+
+        if count in LIST_BB:
+            maes = NetworksDict()
+            results_handler = ResultsHandler(maes)
+            results_handler.save_results(f"NN_results_{count}")
+
     def explore_different_architectures(
         self,
         training_data: list[float],
@@ -73,35 +101,65 @@ class NetworkConstructor:
         
         Returns:
         allErrors   (list[list[float, tuple[list[int], float, int]]])   - All maes of every parameter combination with the accompanying parameter combination"""
-        count = 0
-        for paramSet in paramList:
-            architecture, learning_rate, batch_size = paramSet
+        fullParamList = [(paramSet, count, len(paramList), training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels) for count,paramSet in enumerate(paramList)]
+        with Pool(processes=25) as p:
+            p.map(self.helper, fullParamList)
 
-            # Create list of activation functions for the network, which will be relu for all but the output layer
-            activations = ["relu" for _ in range(len(architecture))]    
-            activations.append("linear")
+    # def explore_different_architectures(
+    #     self,
+    #     training_data: list[float],
+    #     training_labels: list[float],
+    #     validation_data: list[float],
+    #     validation_labels: list[float],
+    #     testing_data: list[float],
+    #     testing_labels: list[float],
+    #     paramList: list[tuple[list[int], float, int]],
+    # ) -> list[list[float, tuple[list[int], float, int]]]:
+    #     """Makes a list of sets of parameters from which different networks can be trained
+        
+    #     Parameters:
+    #     training_data           - Data used to train the model for optimal performance
+    #     training_labels         - Preferred outcomes for training
+    #     validation_data         - Data used to prevent overfitting of the data
+    #     validation_labels       - Labels used for preventing overfitting
+    #     testing_data            - Data used to evaluate the model performance
+    #     testing_labels          - Labels for evaluating model performance
+    #     paramList               (list[tuple[list[int], float, int]])    - Precomputed list of parameters from which networks will be built and trained. Consists of:
+    #         architectures       (list[int]])                            - The amount of neurons in each layer of the network
+    #         learning_rates      (float)                                 - The step size scaling used in training
+    #         batch_sizes         (int)                                   - The number of datapoints to process before updating the network in training
+        
+    #     Returns:
+    #     allErrors   (list[list[float, tuple[list[int], float, int]]])   - All maes of every parameter combination with the accompanying parameter combination"""
+    #     count = 0
+    #     for paramSet in paramList:
+    #         architecture, learning_rate, batch_size = paramSet
 
-            # Create and train the model
-            self.model = self.build_model(architecture=architecture, activations=activations, learning_rate=learning_rate)
-            self.model.trainModel(training_data, training_labels, validation_data, validation_labels, self.epochs, batch_size)
+    #         # Create list of activation functions for the network, which will be relu for all but the output layer
+    #         activations = ["relu" for _ in range(len(architecture))]    
+    #         activations.append("linear")
 
-            # Evaluate the model
-            mae = self.model.compute_mae(testing_data, testing_labels)
-            self.results.append([mae, paramSet])
+    #         # Create and train the model
+    #         self.model = self.build_model(architecture=architecture, activations=activations, learning_rate=learning_rate)
+    #         self.model.trainModel(training_data, training_labels, validation_data, validation_labels, self.epochs, batch_size)
 
-            # Clear Keras session and free memory
-            K.clear_session()
-            del self.model
-            gc.collect()  # Force garbage collection
+    #         # Evaluate the model
+    #         mae = self.model.compute_mae(testing_data, testing_labels)
+    #         self.results.append([mae, paramSet])
+
+    #         # Clear Keras session and free memory
+    #         K.clear_session()
+    #         del self.model
+    #         gc.collect()  # Force garbage collection
             
-            count += 1
+    #         count += 1
 
-            print(f"Now training the {count}th model, {9300-count} more to go.")
+    #         print(f"Now training the {count}th model, {9300-count} more to go.")
 
-            if count in LIST_BB:
-                maes = NetworksDict()
-                results_handler = ResultsHandler(maes)
-                results_handler.save_results(f"NN_results_{count}")
+    #         if count in LIST_BB:
+    #             maes = NetworksDict()
+    #             results_handler = ResultsHandler(maes)
+    #             results_handler.save_results(f"NN_results_{count}")
 
 
 class NetworksDictMeta(type):

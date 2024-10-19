@@ -37,7 +37,7 @@ class DataReader:
         startdate = start.strftime("%Y-%m-%d")
         
         attempts = 0
-        max_attempts = 5  # Limit to prevent infinite loops
+        max_attempts = 10  # Limit to prevent infinite loops
         
         while attempts < max_attempts:
             # Retrieve data

@@ -93,14 +93,14 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
 def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage, maxEpochs):
     # Generate arbitrary list of parameters
     pConst = ParameterConstructor()
-    # pConst.calcNetworkArchitectures(2, 16, 32, 4)   # Just some sample numbers, check the code to find out what it does
-    # pConst.calcLearningRates(0.0001, 0.01, 0.0005)
-    # pConst.calcBatchSize(1,8,1)
+    pConst.calcNetworkArchitectures(2, 16, 32, 4)   # Just some sample numbers, check the code to find out what it does
+    pConst.calcLearningRates(0.0005, 0.01, 0.0005)
+    pConst.calcBatchSize(1,8,1)
 
     # Less realistic values but this is for testing baby, relax
-    pConst.calcNetworkArchitectures(2, 2, 31, 1) 
-    pConst.calcLearningRates(0.001, 0.1, 0.1)
-    pConst.calcBatchSize(1,5,1)
+    # pConst.calcNetworkArchitectures(2, 2, 31, 1) 
+    # pConst.calcLearningRates(0.001, 0.1, 0.1)
+    # pConst.calcBatchSize(1,5,1)
     pConst.calcParamList()  # 12 different parameter sets
     print(len(pConst.paramList))
 
@@ -111,7 +111,7 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     maes = NetworksDict()
 
     results_handler = ResultsHandler(maes)
-    results_handler.save_results("NN_results")
+    results_handler.save_results("NN_results_v2")
 
 def test_statistical_analysis():
     results = ResultsHandler()
@@ -134,5 +134,6 @@ if __name__ == "__main__":
     #model = Model()
     #model.load_model("AAPL")
     #print(model.model_summary())
-    #testNetworkConstructor("AAPL", 10, 5, 3, 0.8, 0.1, 50)
-    test_statistical_analysis()
+    testNetworkConstructor("AAPL", 50, 100, 3, 0.8, 0.1, 50)
+    # testNetworkConstructor("AAPL", 10, 5, 3, 0.8, 0.1, 50)
+    # test_statistical_analysis()
