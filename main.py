@@ -75,11 +75,28 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     
     Returns:
     None"""
-    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = get_Data(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
+    (
+        training_data,
+        validation_data,
+        testing_data, 
+        training_labels, 
+        validation_labels, 
+        testing_labels
+    ) = get_Data(
+        stockCode,
+        pointsPerSet,
+        numSets,
+        labelsPerSet,
+        testingPercentage,
+        validationPercentage
+    )
 
     # Make and train the model
     model = Model()
-    model.create_sequential_model([27, labelsPerSet], ["relu", "linear"], pointsPerSet-labelsPerSet)
+    model.create_sequential_model(
+        model_shape=[27, labelsPerSet],
+        activations=["relu", "linear"],
+        input_shape=pointsPerSet-labelsPerSet)
     model.compileModel(learning_rate, "mse", ["mae"])
     model.trainModel(training_data, training_labels, validation_data, validation_labels, epochs, batch_size)
 
