@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from data_parser.stockGetter import Stock
+from pandas.core.series import Series
 
 class DataReader:
     def __init__(self, stockName: str, enddate: str = "2024-09-01", interval: str = "1d"):
@@ -17,7 +18,7 @@ class DataReader:
         self.enddate = "2024-09-01" # GW: Why not `=enddate` ?
         self.data = None
 
-    def getData(self, nPoints=50, nSets=100):
+    def getData(self, nPoints=50, nSets=100) -> tuple[datetime, Series, Series, Series, Series]:
         """Retrieves datasets of user-specified length based on interval, ensuring sufficient data points.
         
         Parameters:
@@ -36,15 +37,16 @@ class DataReader:
         startdate = start.strftime("%Y-%m-%d")
         
         attempts = 0
-        max_attempts = 5  # Limit to prevent infinite loops
+        max_attempts = 10  # Limit to prevent infinite loops
         
         while attempts < max_attempts:
             # Retrieve data
             stock = Stock(self.stockName, startdate, self.enddate, self.interval)
-            open_, high, low, close = stock.get_data()
+            dates, open_, high, low, close = stock.get_data()
             
-            # Combine into OHLC format
-            self.data = [(op, hi, lo, cl) for op, hi, lo, cl in zip(open_, high, low, close)]
+            # Combine into DOHLC format
+            # (dates, open, high, low, close)
+            self.data = [(dat, op, hi, lo, cl) for dat, op, hi, lo, cl in zip(dates, open_, high, low, close)]
             
             # Check if we have enough data
             if len(self.data) >= required_data_points:
@@ -91,14 +93,6 @@ class DataReader:
             self.getData(nPoints, 100)
             self.getLabels(nPoints, labelSize)
 
-    def splitLabels(self, inputData, labelSize=5):
-        allData = []
-        allLabels = []
-        for set in inputData:
-            allData.append(set[:-labelSize])
-            allLabels.append(set[-labelSize:])
-        return allData, allLabels
-
     def _validate_date(self, date):
         if not isinstance(date, str):
             raise TypeError(
@@ -107,13 +101,5 @@ class DataReader:
         try:
             datetime.strptime(date, '%Y-%m-%d')
         except TypeError("The date must be of the form `yyyy-mm-dd`!") as e:
-            raise e 
-        # GW: How does this work?
+            raise e
         
-    def splitSets(self, inputData, pointsPerSet):
-        allData = []
-        for i in range(len(inputData)//pointsPerSet):
-            data = inputData[i*pointsPerSet:(i+1)*pointsPerSet]
-            allData.append(data)
-        self.data = allData
-        return self.data

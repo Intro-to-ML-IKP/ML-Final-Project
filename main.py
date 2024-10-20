@@ -2,11 +2,10 @@
 from data_parser.dataReader import DataReader
 from data_parser.dataProcessor import DataProcessor
 from visualisation.visualize import PlotStocks  #plot_candlestick, plot_residuals
-import numpy as np
-from sklearn.model_selection import train_test_split
-from data_parser.stockGetter import Stock
 from network.network import Model
-from sklearn.metrics import mean_absolute_error
+from network.parameterConstructor import ParameterConstructor
+from network.network_constructor import NetworkConstructor, NetworksDict, ResultsHandler
+
 
 def testing_SMA():
     dR = DataReader("AAPL")                                  # Initialize for AAPL stock
@@ -36,11 +35,28 @@ def testing_SMA():
     # # Master Plot
     plotter.masterPlot()
 
+def get_Data(stockCode: str, pointsPerSet: int, numSets: int, labelsPerSet: int, testingPercentage: float, validationPercentage: float):
+    dR = DataReader(stockCode)                                      # Initialize for AAPL stock
+    stock_data = dR.getData(pointsPerSet+2, numSets)                # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints. +2 because we will lose those with the SMAs                
+    processor = DataProcessor(stock_data, None)
+    sets = processor.generate_sets(pointsPerSet+2)          # Splits the stock data into sets for the processor
 
-def evaluateModel(model, testing_data, testing_labels):
-    predictions = model.predict(testing_data)
-    mae = mean_absolute_error(testing_labels, predictions)
-    return mae
+    # Get SMA and residuals
+    allResiduals = []
+    allExtrapolations = []
+    for sD in sets:
+        SMA = processor.calculate_SMA(sD)                                          # We lose 2 values here
+        residuals = processor.calculate_residuals(sD, SMA)                              # Subtracts the SMA from the closing prices, this will be used in the network
+        extrapolation_SMA = processor.extrapolate_the_SMA(SMA, labelsPerSet)     # Extrapolates Simple Moving Average [labelsPerSet] points into the future
+        allResiduals.append(residuals)
+        allExtrapolations.append(extrapolation_SMA)
+
+    # Split the data from the labels
+    data, labels = processor.generate_labels(allResiduals, labelsPerSet)
+
+    # Apply a train, test, validation split on the data
+    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = processor.split_data(data, labels, testingPercentage, validationPercentage)
+    return training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels
 
 def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, learning_rate, epochs, batch_size):
     """Trains a model on a specified stock to predict the next prices
@@ -59,39 +75,66 @@ def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, vali
     
     Returns:
     None"""
-    dR = DataReader(stockCode)                                      # Initialize for AAPL stock
-    stock_data = dR.getData(pointsPerSet+2, numSets)                # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints. +2 because we will lose those with the SMAs
-    sets = dR.splitSets(stock_data, pointsPerSet+2)                 # Splits the stock data into sets for the processor
-
-    # Apply preprocessing to get SMA and residuals
-    allResiduals = []
-    allExtrapolations = []
-    for sD in sets:
-        processor = DataProcessor(sD, None)
-        closing_SMA = processor.calculate_SMA()[0]                                          # We lose 2 values here
-        residuals = processor.calculate_residuals(closing_SMA)                              # Subtracts the SMA from the closing prices, this will be used in the network
-        extrapolation_SMA = processor.extrapolate_the_SMA(closing_SMA, labelsPerSet, 0)     # Extrapolates Simple Moving Average [labelsPerSet] points into the future
-        allResiduals.append(residuals)
-        allExtrapolations.append(extrapolation_SMA)
-
-    # Split the data from the labels
-    data, labels = dR.splitLabels(allResiduals, labelsPerSet)
-
-    # Apply a train, test, validation split on the data
-    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = processor.split_data(data, labels, testingPercentage, validationPercentage)
+    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = get_Data(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
 
     # Make and train the model
-    model = Model([64, 32, labelsPerSet], ["relu", "relu", "linear"], pointsPerSet-labelsPerSet)
+    model = Model()
+    model.create_sequential_model([27, labelsPerSet], ["relu", "linear"], pointsPerSet-labelsPerSet)
     model.compileModel(learning_rate, "mse", ["mae"])
     model.trainModel(training_data, training_labels, validation_data, validation_labels, epochs, batch_size)
 
     # Evaluate on testing data
-    mae = evaluateModel(model, testing_data, testing_labels)
-
-    # Save model
-    model.model.save(f"models/{stockCode}_model.keras")
-
-if __name__ == "__main__":
-    main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)
-    # testing_SMA()
+    mae = model.compute_mae(testing_data, testing_labels)
     
+    print(mae)
+    # Save model
+    model.save_model(stockCode)
+
+def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage, maxEpochs):
+    # Generate arbitrary list of parameters
+    pConst = ParameterConstructor()
+    pConst.calcNetworkArchitectures(2, 16, 32, 4)   # Just some sample numbers, check the code to find out what it does
+    pConst.calcLearningRates(0.0005, 0.01, 0.0005)
+    pConst.calcBatchSize(1,8,1)
+
+    # Less realistic values but this is for testing baby, relax
+    # pConst.calcNetworkArchitectures(2, 2, 31, 1) 
+    # pConst.calcLearningRates(0.001, 0.1, 0.1)
+    # pConst.calcBatchSize(1,5,1)
+    pConst.calcParamList()  # 12 different parameter sets
+    print(len(pConst.paramList))
+
+    # Evaluate the model 
+    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = get_Data(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
+    netConst = NetworkConstructor(len(training_data[0]), len(training_labels[0]), maxEpochs)
+    netConst.explore_different_architectures(training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels, pConst.paramList)
+    maes = NetworksDict()
+
+    results_handler = ResultsHandler(maes)
+    results_handler.save_results("NN_results_v3")
+
+def test_statistical_analysis():
+    list_ = ["NN_results_2000", "NN_results_3000", "NN_results_4000"]
+    results = ResultsHandler()
+    results.load_multiple_results(list_)
+    print("Correlation Coeficients:")
+    mae_correlations, p_values = results.calculate_correlation_coefficients()
+    print(mae_correlations)
+    print("P-values:")
+    print(p_values)
+    print("Regression Analysis:")
+    print(results.perform_regression_analysis())
+    results.create_scatterplot_matrix()
+    results.create_correlation_heatmap()
+    param_ranges = results.get_parmeter_ranges()
+    print(param_ranges)
+    
+if __name__ == "__main__":
+    # main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)
+    #testing_SMA()
+    #model = Model()
+    #model.load_model("AAPL")
+    #print(model.model_summary())
+    #testNetworkConstructor("AAPL", 50, 100, 3, 0.8, 0.1, 50)
+    # testNetworkConstructor("AAPL", 10, 5, 3, 0.8, 0.1, 50)
+    test_statistical_analysis()

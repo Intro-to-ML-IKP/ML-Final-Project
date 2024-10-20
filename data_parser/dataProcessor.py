@@ -1,5 +1,6 @@
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+from copy import deepcopy
 import numpy as np
 import pandas as pd
 import pandas_ta as ta
@@ -7,48 +8,24 @@ import math
 
 
 class DataProcessor:
-    def __init__(self, data: list[tuple[float,float,float,float]], labels):
-        self._data = data
+    def __init__(self, data: list[tuple[str,float,float,float,float]], labels):
+        self._dates = None
+        self._data = None
         self._labels = labels
-        self._data_sets = self._calculate_data_sets()
-
+        self._unpack_data(data)
+    
     @property
-    def closing_prices(self):
+    def data(self) -> tuple[float,float,float,float]:
         """
-        Gets the closing prices.
+        Retunrs a deepcopy of the stock data in OHLC tuple.
         """
-        return self._data_sets[0]["Close"]
-
-    def _calculate_data_sets(self) -> list[pd.DataFrame]:
-        """
-        Unzips the data and puts it in a panda data frame. It also rounds
-        the values for future computation.
-
-        :return: a list of panda dataFrame with the data
-        :return type: list[pd.dataFrame]
-        """
-        # Round the data to 2 decimal places (helps with computational speed)
-        data = self._round_data(self._data)
-
-        # Get the HLOC form of the data
-        high, low, open_price, close_price = list(zip(*data))
-
-        # Create a data frameworks
-        data_frame = {
-            "Open": open_price,
-            "High": high,
-            "Low": low,
-            "Close": close_price
-        }
-        df = pd.DataFrame(data_frame)
-
-        return [df]
-
+        return deepcopy(self._data)
 
     def calculate_SMA(
             self,
+            stock_data: list[tuple[float,float,float,float]],
             length: int = 3
-            ) -> list[list[float]]:
+            ) -> list[float]:
         """
         The function `_calculate_SMA` calculates the Simple Moving Average for a given dataset over a
         specified length of time.
@@ -61,30 +38,25 @@ class DataProcessor:
         :sets_SMA type: list[Float]
         """
         # Initialise a list that would contain the data frameworks
-        sets_SMA = []
 
-        try:
-            # Loop throught all the data sets
-            for data_set in self._data_sets:
-                # Calculate the SMA
-                SMA = ta.sma(data_set['Close'], length=length)
+        # Unzipping the close
+        _, _, _, close = zip(*stock_data)
 
-                SMA_list = SMA.tolist()
+        # Creating a dataFrame (required for the pandas_ta module)
+        close_pd = pd.DataFrame({"close": []})
+        close_pd["close"] = close
 
-                SMA_list = [x for x in SMA_list if not math.isnan(x)]
-                # Append the SMA to the list of SMA
-                sets_SMA.append(SMA_list)
+        # Calculating SMA
+        SMA = ta.sma(close_pd["close"], length=length)
 
-            return sets_SMA
-        except TypeError(
-            "There weren't any data sets found!\n"
-            "Value for self._data_sets not itterable!\n"
-            f"The value is of type: {type(self._data_sets)}"
-            "Expected type: list[pd.dataFrame]"
-            ) as e:
-            raise e
+        # Converting SMA to list and rounding it,
+        # also removing the NAN value
+        SMA_list = SMA.tolist()
+        SMA_list = [round(x, 2) for x in SMA_list if not math.isnan(x)]
+
+        return SMA_list
         
-    def calculate_residuals(self, sma: list[float]) -> list[float]:
+    def calculate_residuals(self, stock_data: list[tuple[float,float,float,float]], sma: list[float]) -> list[float]:
         """
         Calculates the residuals by substracting the closing prices
         from a Simple Moving Average (SMA).
@@ -95,12 +67,12 @@ class DataProcessor:
         prices.
         :residuals type: list[float]
         """
-        closing_prices = self.closing_prices
+        _, _, _, closing_prices = zip(*stock_data)
 
         nr_of_residuals = len(sma)
         closing_prices = closing_prices[-nr_of_residuals:]
 
-        residuals = [a - b for a, b in zip(sma, closing_prices)]
+        residuals = [round(a - b, 2) for a, b in zip(sma, closing_prices)]
 
         return residuals
 
@@ -155,6 +127,68 @@ class DataProcessor:
 
         return aligned_extrapolation
     
+    def split_data(self, X, y, train_size=0.7, val_size=0.15):
+        """
+        Applies a train, test, validation split on the data and labels.
+        
+        Parameters:
+        X           (list)  - The input data
+        y           (list)  - The input labels
+        train_size  (float) - Percentage of total data used for training
+        val_size    (float) - Percentage of total data used for validation
+        
+        Returns:
+        training data + labels
+        validation data + labels
+        testing data + labels
+        """
+        test_size = 1 - train_size - val_size
+
+        # Step 1: Split the data into train+val and test sets
+        X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=test_size, shuffle=False)
+
+        # Step 2: Split the train+val set into training and validation sets
+        val_ratio = val_size / (train_size + val_size)  # Adjust val_size proportionally
+        X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=val_ratio, shuffle=False)
+
+        return np.array(X_train), np.array(X_val), np.array(X_test), np.array(y_train), np.array(y_val), np.array(y_test)
+    
+    def generate_labels(self, residuals_data: list[list[float]], label_size: int = 5):
+        allData = []
+        allLabels = []
+        for set in residuals_data:
+            allData.append(set[:-label_size])
+            allLabels.append(set[-label_size:])
+        return allData, allLabels
+    
+    def generate_sets(self, pointsPerSet: int) -> list:
+        """
+        Generates sets from the Stock data to be used in training. Usually this is used
+        to compute SME and get the residuals in order to train a FFNN.
+
+        :param pointsPerSet: the points per data set
+        :pointsPerSet type: int
+        """
+        allData = []
+        for i in range(len(self._data)//pointsPerSet):
+            data = self._data[i*pointsPerSet:(i+1)*pointsPerSet]
+            allData.append(data)
+        return allData
+
+    def _unpack_data(self, data: list[tuple[str,float,float,float,float]]) -> None:
+        """
+        Unpacks the data and separates Date from the Stock Data.
+        Used in the instantiation of the Class
+
+        :param data: stock data containing (date, open, high, low, close) data.
+        :type data: list[tuple[str,float,float,float,float]]
+        """
+        dates, open_, high, low, close = zip(*data)
+        self._dates = dates
+        data = [(op, hi, lo, cl) for op, hi, lo, cl in zip(open_, high, low, close)]
+        rounded_data = self._round_data(data)
+        self._data = rounded_data
+    
     def _align_extrapolation(self, extrapolation: list[float], align_value: float) -> list[float]:
         """
         Aligns the extrapolation of SMA with the last closing price.
@@ -176,8 +210,6 @@ class DataProcessor:
         aligned_extrapolation = [x + delta for x in extrapolation]
 
         return aligned_extrapolation
-
-
     
     def _round_data(
             self, data: list[tuple[float, float, float, float]]
@@ -196,34 +228,4 @@ class DataProcessor:
             rounded_tup = tuple(round(value, 2) for value in tup)
             rounded_data.append(rounded_tup)
         return rounded_data
-
     
-    def split_data(self, X, y, train_size=0.7, val_size=0.15):
-        """Applies a train, test, validation split on the data and labels.
-        
-        Parameters:
-        X           (list)  - The input data
-        y           (list)  - The input labels
-        train_size  (float) - Percentage of total data used for training
-        val_size    (float) - Percentage of total data used for validation
-        
-        Returns:
-        training data + labels
-        validation data + labels
-        testing data + labels"""
-
-        test_size = 1 - train_size - val_size
-        # Step 1: Split the data into train+val and test sets
-        X_train_val, X_test, y_train_val, y_test = train_test_split(X, y, test_size=test_size)
-
-        # Step 2: Split the train+val set into training and validation sets
-        val_ratio = val_size / (train_size + val_size)  # Adjust val_size proportionally
-        X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val, test_size=val_ratio)
-
-        self.training_data = X_train
-        self.training_labels = y_train
-        self.validation_data = X_val
-        self.validation_labels = y_val
-        self.testing_data = X_test
-        self.testing_labels = y_test
-        return np.array(X_train), np.array(X_val), np.array(X_test), np.array(y_train), np.array(y_val), np.array(y_test)
