@@ -273,9 +273,7 @@ class ResultsHandler:
             df2 = self._generate_pd_dataframe()
             self._results = None
             results = pd.concat([results, df2], ignore_index=True)
-        print(results, type(results))
         self._df = results
-        print(self._results, type(self._results))
 
     def calculate_correlation_coefficients(self):
         """
