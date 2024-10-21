@@ -73,7 +73,7 @@ class NetworkConstructor:
         if count in LIST_BB:
             maes = NetworksDict()
             results_handler = ResultsHandler(maes)
-            results_handler.save_results(f"NN_results_{count}")
+            results_handler.save_results(f"NN_results_singleOutput_{count}_v2")
 
     def explore_different_architectures(
         self,

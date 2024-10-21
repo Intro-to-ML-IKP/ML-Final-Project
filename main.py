@@ -111,7 +111,7 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     maes = NetworksDict()
 
     results_handler = ResultsHandler(maes)
-    results_handler.save_results("NN_results_v3")
+    results_handler.save_results("NN_results_singleOutput_v2")
 
 def test_statistical_analysis():
     list_ = ["NN_results_2000", "NN_results_3000", "NN_results_4000"]
@@ -135,6 +135,6 @@ if __name__ == "__main__":
     #model = Model()
     #model.load_model("AAPL")
     #print(model.model_summary())
-    #testNetworkConstructor("AAPL", 50, 100, 3, 0.8, 0.1, 50)
+    testNetworkConstructor("AAPL", 500, 20, 1, 0.8, 0.1, 50)
     # testNetworkConstructor("AAPL", 10, 5, 3, 0.8, 0.1, 50)
-    test_statistical_analysis()
+    # test_statistical_analysis()
