@@ -135,6 +135,13 @@ if __name__ == "__main__":
     #model = Model()
     #model.load_model("AAPL")
     #print(model.model_summary())
-    testNetworkConstructor("AAPL", 500, 20, 1, 0.8, 0.1, 50)
+    testNetworkConstructor(
+        stockCode="AAPL",
+        pointsPerSet=500,
+        numSets=20,
+        labelsPerSet=1,
+        testingPercentage=0.8,
+        validationPercentage=0.1,
+        maxEpochs=50)
     # testNetworkConstructor("AAPL", 10, 5, 3, 0.8, 0.1, 50)
     # test_statistical_analysis()
