@@ -28,7 +28,7 @@ class Model:
         None"""
         model = Sequential()
 
-        model.add(Dense(model_shape[0], input_dim=input_shape, activation=activations[0]))  # Input layer (n=7), hidden layer with 64 units
+        model.add(Dense(model_shape[0], input_dim=input_shape, activation=activations[0])) 
 
         for nNeurons, activ in zip(model_shape[1:], activations[1:-1]):
             model.add(Dense(nNeurons, activation=activ))            

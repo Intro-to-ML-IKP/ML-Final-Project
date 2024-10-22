@@ -95,7 +95,7 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     pConst = ParameterConstructor()
     pConst.calcNetworkArchitectures(2, 16, 32, 4)   # Just some sample numbers, check the code to find out what it does
     pConst.calcLearningRates(0.0005, 0.01, 0.0005)
-    pConst.calcBatchSize(1,8,1)
+    pConst.calcBatchSize(1, 8, 1)
 
     # Less realistic values but this is for testing baby, relax
     # pConst.calcNetworkArchitectures(2, 2, 31, 1) 
