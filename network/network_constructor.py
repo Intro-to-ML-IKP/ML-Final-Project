@@ -9,6 +9,7 @@ from tensorflow.keras import backend as K # type: ignore
 from sklearn.linear_model import LinearRegression
 from multiprocessing import Pool
 from scipy.stats import pearsonr
+from copy import deepcopy
 
 
 LIST_BB = list(range(1000, 1000001, 1000))
@@ -56,12 +57,12 @@ class NetworkConstructor:
         activations.append("linear")
 
         # Create and train the model
-        self.model = self.build_model(architecture=architecture, activations=activations, learning_rate=learning_rate)
-        self.model.trainModel(training_data, training_labels, validation_data, validation_labels, self.epochs, batch_size)
+        thread_safe_model = self.build_model(architecture=architecture, activations=activations, learning_rate=learning_rate)
+        thread_safe_model.trainModel(training_data, training_labels, validation_data, validation_labels, self.epochs, batch_size)
 
         # Evaluate the model
-        mae = self.model.compute_mae(testing_data, testing_labels)
-        self.results.append([mae, paramSet])
+        mae = thread_safe_model.compute_mae(testing_data, testing_labels)
+        NetworkConstructor.results.append([mae, paramSet])
 
         # Clear Keras session and free memory
         # K.clear_session()
