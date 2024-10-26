@@ -59,25 +59,11 @@ def get_Data(stockCode: str, pointsPerSet: int, numSets: int, labelsPerSet: int,
     return training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels
 
 def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage, maxEpochs):
-    """ Main function to test multiple networks and find the best one. """
     # Generate arbitrary list of parameters
     pConst = ParameterConstructor()
-    pConst.calcNetworkArchitectures(
-        maxLayers=2,
-        minNeurons=16,
-        maxNeurons=32,
-        dNeurons=4
-    )   # Just some sample numbers, check the code to find out what it does
-    pConst.calcLearningRates(
-        minLearningRate=0.0005,
-        maxLearningRate=0.01,
-        dLearningRate=0.0005
-    )
-    pConst.calcBatchSize(
-        minBatchSize=1,
-        maxBatchSize=8,
-        dBatchSize=1
-    )
+    pConst.calcNetworkArchitectures(2, 16, 32, 4)   # Just some sample numbers, check the code to find out what it does
+    pConst.calcLearningRates(0.0005, 0.01, 0.0005)
+    pConst.calcBatchSize(1, 8, 1)
 
     # Less realistic values but this is for testing baby, relax
     # pConst.calcNetworkArchitectures(2, 2, 31, 1) 
