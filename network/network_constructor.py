@@ -64,17 +64,12 @@ class NetworkConstructor:
         mae = thread_safe_model.compute_mae(testing_data, testing_labels)
         NetworkConstructor.results.append([mae, paramSet])
 
-        # Clear Keras session and free memory
-        # K.clear_session()
-        # del self.model
-        # gc.collect()  # Force garbage collection
-
         print(f"Now training the model {count}/{maxCount}")
 
         if count in LIST_BB:
             maes = NetworksDict()
             results_handler = ResultsHandler(maes)
-            results_handler.save_results(f"NN_results_singleOutput_{count}_v2")
+            results_handler.save_results(f"NN_results_{count}_final")
 
     def explore_different_architectures(
         self,
@@ -239,7 +234,8 @@ class ResultsHandler:
         :param filename: the name of the file to be saved
         :filename type: str
         """
-        filename = "network\\" + filename + ".pkl"
+
+        filename = f"network/{filename}.pkl"
         if self._results is not None:
             if os.path.exists(filename):
                 self._options_if_file_exists(filename)
@@ -257,7 +253,7 @@ class ResultsHandler:
         :param filename: the name of the file to be loaded
         :filename type: str
         """
-        filename = "network\\" + filename + ".pkl"
+        filename = f"network/{filename}.pkl"
         if os.path.exists(filename):
             with open(filename, "rb") as file:
                 loaded_data = pickle.load(file)
