@@ -2,9 +2,9 @@
 from data_parser.dataReader import DataReader
 from data_parser.dataProcessor import DataProcessor
 from visualisation.visualize import PlotStocks  #plot_candlestick, plot_residuals
-from network.network import Model
 from network.parameterConstructor import ParameterConstructor
-from network.network_constructor import NetworkConstructor, NetworksDict, ResultsHandler
+from network.network_constructor import NetworkConstructor, NetworksDict
+from results.result_handler import ResultsHandler
 
 
 def testing_SMA():
