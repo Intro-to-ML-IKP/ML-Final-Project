@@ -45,7 +45,7 @@ class ResultsHandler:
         :filename type: str
         """
 
-        filename = f"results\\{foldername}\\{filename}.pkl"
+        filename = f"results/{foldername}/{filename}.pkl"
         if self._results is not None:
             if os.path.exists(filename):
                 self._options_if_file_exists(filename)

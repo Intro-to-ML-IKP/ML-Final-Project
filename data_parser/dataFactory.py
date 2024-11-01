@@ -86,6 +86,7 @@ class StockDataFactory:
 
         # Generate labels from the data
         data, labels = self._get_labeled_data(residuals)
+        print(data)
 
         # Apply a train, test, validation split on the data
         (
@@ -147,11 +148,11 @@ class StockDataFactory:
         residuals = []
         for set_ in sets:
             simple_moving_average = self._data_processor.calculate_SMA(set_)
-            residuals = self._data_processor.calculate_residuals(
+            residual = self._data_processor.calculate_residuals(
                 set_,
                 simple_moving_average
                 )
-            residuals.append(residuals)
+            residuals.append(residual)
         return residuals
     
     def _get_labeled_data(
@@ -166,6 +167,7 @@ class StockDataFactory:
         :return: _description_
         :rtype: tuple[list[list[float]], list[list[float]]]
         """
+        print(residuals)
         data, labels = self._data_processor.generate_labels(
             residuals,
             self._labels_per_set

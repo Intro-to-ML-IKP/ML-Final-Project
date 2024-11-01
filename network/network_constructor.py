@@ -20,7 +20,7 @@ ParamTuple = list[
         ]
     ]
 
-LIST_BB = list(range(10, 1000001, 10))
+LIST_BB = list(range(1000, 1000001, 1000))
 
 class NetworksConstructor:
     results = []
@@ -120,6 +120,7 @@ class NetworksConstructor:
             activations=activations,
             learning_rate=learning_rate
             )
+        
         model.trainModel(
             training_data,
             training_labels,
@@ -145,7 +146,7 @@ class NetworksConstructor:
         if count in LIST_BB:
             maes = NetworksDict()
             results_handler = ResultsHandler(maes)
-            results_handler.save_results(f"NN_results_{count}_final")
+            results_handler.save_results(f"NN_results_{count}_lessData", "test")
 
     def explore_different_architectures(
         self,

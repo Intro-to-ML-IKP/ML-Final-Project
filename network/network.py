@@ -1,7 +1,7 @@
 from typing import Any
 from tensorflow import keras
 from tensorflow.keras.models import Sequential # type: ignore
-from tensorflow.keras.layers import Dense # type: ignore
+from tensorflow.keras.layers import Dense,Input # type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
 from tensorflow.keras.callbacks import EarlyStopping # type: ignore
 from sklearn.metrics import mean_absolute_error
@@ -35,34 +35,16 @@ class Model:
 
         model = Sequential()
 
-        # Adds the input layer
-        model.add(
-            Dense(
-                model_shape[0],
-                input_dim=input_shape,
-                activation=activations[0]
-                )
-            ) 
+        # Define the input layer
+        model.add(Input(shape=(input_shape,)))
 
-        # Adds the hidden layers
-        for number_of_neurons, activation in zip(
-            model_shape[1:], activations[1:-1]
-            ):
-            model.add(
-                Dense(
-                    number_of_neurons,
-                    activation=activation
-                    )
-                    )            
-        
-        # Adds the output layer
-        model.add(
-            Dense(
-                output_size,
-                activation=activations[-1]
-                )
-                )
-        
+        # Add all layers, including hidden layers and the output layer
+        for number_of_neurons, activation in zip(model_shape, activations[:-1]):
+            model.add(Dense(number_of_neurons, activation=activation))
+
+        # Add the output layer
+        model.add(Dense(output_size, activation=activations[-1]))
+
         self.model = model
 
     def compileModel(
@@ -129,7 +111,8 @@ class Model:
             epochs=epochs,
             batch_size=batch_size,
             validation_data=(validation_data, validation_labels), 
-            callbacks=[early_stopping]
+            callbacks=[early_stopping],
+            verbose=0
         )
 
     def predict(
