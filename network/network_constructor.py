@@ -22,7 +22,7 @@ ParamTuple = list[
 
 LIST_BB = list(range(1000, 1000001, 1000))
 
-class NetworkConstructor:
+class NetworksConstructor:
     results = []
 
     def __init__(
@@ -134,7 +134,7 @@ class NetworkConstructor:
             testing_data,
             testing_labels
             )
-        NetworkConstructor.results.append(
+        NetworksConstructor.results.append(
             [mae, paramSet]
             )
 
@@ -225,18 +225,18 @@ class NetworksDictMeta(type):
 class NetworksDict(metaclass=NetworksDictMeta):
     """
     This metaclass is resposible for accessing the
-    NetworkConstructor's attribute results, convert the list
+    NetworksConstructor's attribute results, convert the list
     to a dictionarry and orders it. It also prints a nice
     human readable overview of the parameters of the Networks.
 
     :call: Prints a human readable sorted NNs with their parameters.
     :return: A sorted dictionary of the results parameter in the class
-    NetworkConstructor.
+    NetworksConstructor.
     """
     @classmethod
     def _list_to_dict(self) -> dict:
         """
-        Gets the NetworkConstructor's results and makes
+        Gets the NetworksConstructor's results and makes
         them into a dictionary.
 
         :return: a dictionary
@@ -244,8 +244,8 @@ class NetworksDict(metaclass=NetworksDictMeta):
         """
         nnDict = {}
 
-        # Access the result list in NetworkConstructor
-        nn_results = NetworkConstructor.results
+        # Access the result list in NetworksConstructor
+        nn_results = NetworksConstructor.results
 
         # Create a dictionary with MAEs as keys and parameters as values
         for mae, params in nn_results:
