@@ -9,6 +9,7 @@ from tensorflow.keras import backend as K # type: ignore
 from sklearn.linear_model import LinearRegression
 from multiprocessing import Pool
 from scipy.stats import pearsonr
+from copy import deepcopy
 
 
 LIST_BB = list(range(1000, 1000001, 1000))
@@ -56,24 +57,19 @@ class NetworkConstructor:
         activations.append("linear")
 
         # Create and train the model
-        self.model = self.build_model(architecture=architecture, activations=activations, learning_rate=learning_rate)
-        self.model.trainModel(training_data, training_labels, validation_data, validation_labels, self.epochs, batch_size)
+        thread_safe_model = self.build_model(architecture=architecture, activations=activations, learning_rate=learning_rate)
+        thread_safe_model.trainModel(training_data, training_labels, validation_data, validation_labels, self.epochs, batch_size)
 
         # Evaluate the model
-        mae = self.model.compute_mae(testing_data, testing_labels)
-        self.results.append([mae, paramSet])
-
-        # Clear Keras session and free memory
-        # K.clear_session()
-        # del self.model
-        # gc.collect()  # Force garbage collection
+        mae = thread_safe_model.compute_mae(testing_data, testing_labels)
+        NetworkConstructor.results.append([mae, paramSet])
 
         print(f"Now training the model {count}/{maxCount}")
 
         if count in LIST_BB:
             maes = NetworksDict()
             results_handler = ResultsHandler(maes)
-            results_handler.save_results(f"NN_results_{count}")
+            results_handler.save_results(f"NN_results_{count}_final")
 
     def explore_different_architectures(
         self,
@@ -238,7 +234,8 @@ class ResultsHandler:
         :param filename: the name of the file to be saved
         :filename type: str
         """
-        filename = "network\\" + filename + ".pkl"
+
+        filename = f"network/{filename}.pkl"
         if self._results is not None:
             if os.path.exists(filename):
                 self._options_if_file_exists(filename)
@@ -256,7 +253,7 @@ class ResultsHandler:
         :param filename: the name of the file to be loaded
         :filename type: str
         """
-        filename = "network\\" + filename + ".pkl"
+        filename = f"network/{filename}.pkl"
         if os.path.exists(filename):
             with open(filename, "rb") as file:
                 loaded_data = pickle.load(file)

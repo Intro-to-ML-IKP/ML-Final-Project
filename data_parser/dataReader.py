@@ -15,7 +15,7 @@ class DataReader:
         self._validate_date(enddate)
         self.stockName = stockName
         self.interval = interval
-        self.enddate = "2024-09-01"
+        self.enddate = "2024-09-01" # GW: Why not `=enddate` ?
         self.data = None
 
     def getData(self, nPoints=50, nSets=100) -> tuple[datetime, Series, Series, Series, Series]:

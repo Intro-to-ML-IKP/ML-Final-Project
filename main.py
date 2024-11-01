@@ -58,44 +58,12 @@ def get_Data(stockCode: str, pointsPerSet: int, numSets: int, labelsPerSet: int,
     training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = processor.split_data(data, labels, testingPercentage, validationPercentage)
     return training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels
 
-def main(stockCode, numSets, pointsPerSet, labelsPerSet, testingPercentage, validationPercentage, learning_rate, epochs, batch_size):
-    """Trains a model on a specified stock to predict the next prices
-    
-    Parameters:
-    stockCode               - The code of the desired stock on the market
-    numSets                 - The number of total datasets to generate
-    pointsPerSet            - The number of datapoints + labels per set
-    labelsPerSet            - The number of labels per set to be subtracted from pointsPerSet. Will also be the amount of points predicted
-    testingPercentage       - The percentage of data chunks to be used for testing
-    validationPercentage    - The percentage of data chunks to be used for validation
-    activationFunction      - Activation function for hidden layers
-    learning_rate           - Learning rate for the optimizer
-    epochs                  - Number of iterations of training performed
-    batch_size              - Number of data chunks used before updating the weights
-    
-    Returns:
-    None"""
-    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = get_Data(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
-
-    # Make and train the model
-    model = Model()
-    model.create_sequential_model([27, labelsPerSet], ["relu", "linear"], pointsPerSet-labelsPerSet)
-    model.compileModel(learning_rate, "mse", ["mae"])
-    model.trainModel(training_data, training_labels, validation_data, validation_labels, epochs, batch_size)
-
-    # Evaluate on testing data
-    mae = model.compute_mae(testing_data, testing_labels)
-    
-    print(mae)
-    # Save model
-    model.save_model(stockCode)
-
 def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage, maxEpochs):
     # Generate arbitrary list of parameters
     pConst = ParameterConstructor()
     pConst.calcNetworkArchitectures(2, 16, 32, 4)   # Just some sample numbers, check the code to find out what it does
     pConst.calcLearningRates(0.0005, 0.01, 0.0005)
-    pConst.calcBatchSize(1,8,1)
+    pConst.calcBatchSize(1, 8, 1)
 
     # Less realistic values but this is for testing baby, relax
     # pConst.calcNetworkArchitectures(2, 2, 31, 1) 
@@ -111,7 +79,7 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     maes = NetworksDict()
 
     results_handler = ResultsHandler(maes)
-    results_handler.save_results("NN_results_v3")
+    results_handler.save_results("NN_results_final")
 
 def test_statistical_analysis():
     list_ = ["NN_results_2000", "NN_results_3000", "NN_results_4000"]
@@ -135,6 +103,13 @@ if __name__ == "__main__":
     #model = Model()
     #model.load_model("AAPL")
     #print(model.model_summary())
-    #testNetworkConstructor("AAPL", 50, 100, 3, 0.8, 0.1, 50)
+    testNetworkConstructor(
+        stockCode="AAPL",
+        pointsPerSet=20,
+        numSets=500,
+        labelsPerSet=1,
+        testingPercentage=0.8,
+        validationPercentage=0.1,
+        maxEpochs=50)
     # testNetworkConstructor("AAPL", 10, 5, 3, 0.8, 0.1, 50)
-    test_statistical_analysis()
+    # test_statistical_analysis()
