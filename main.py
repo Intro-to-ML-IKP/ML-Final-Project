@@ -61,7 +61,12 @@ def get_Data(stockCode: str, pointsPerSet: int, numSets: int, labelsPerSet: int,
 def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage, maxEpochs):
     # Generate arbitrary list of parameters
     pConst = ParameterConstructor()
-    pConst.calcNetworkArchitectures(2, 16, 32, 4)   # Just some sample numbers, check the code to find out what it does
+    pConst.calcNetworkArchitectures(
+        maxLayers = 2,
+        minNeurons = 16,
+        maxNeurons = 32,
+        dNeurons = 4
+    )   # Just some sample numbers, check the code to find out what it does
     pConst.calcLearningRates(0.0005, 0.01, 0.0005)
     pConst.calcBatchSize(1, 8, 1)
 
