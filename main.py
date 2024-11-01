@@ -3,9 +3,9 @@ from data_parser.dataReader import DataReader
 from data_parser.dataProcessor import DataProcessor
 from visualisation.visualize import PlotStocks  #plot_candlestick, plot_residuals
 from network.parameterConstructor import ParameterConstructor
-from network.network_constructor import NetworkConstructor, NetworksDict
+from network.network_constructor import NetworksConstructor, NetworksDict
 from results.result_handler import ResultsHandler
-
+from data_parser.dataFactory import StockDataFactory
 
 def testing_SMA():
     dR = DataReader("AAPL")                                  # Initialize for AAPL stock
@@ -38,7 +38,7 @@ def testing_SMA():
 def get_Data(stockCode: str, pointsPerSet: int, numSets: int, labelsPerSet: int, testingPercentage: float, validationPercentage: float):
     dR = DataReader(stockCode)                                      # Initialize for AAPL stock
     stock_data = dR.getData(pointsPerSet+2, numSets)                # Download sufficient data for [numSets] sets of [pointsPerSet] datapoints. +2 because we will lose those with the SMAs                
-    processor = DataProcessor(stock_data, None)
+    processor = DataProcessor(stock_data)
     sets = processor.generate_sets(pointsPerSet+2)          # Splits the stock data into sets for the processor
 
     # Get SMA and residuals
@@ -63,28 +63,35 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     pConst = ParameterConstructor()
     pConst.calcNetworkArchitectures(
         maxLayers = 2,
-        minNeurons = 16,
-        maxNeurons = 32,
-        dNeurons = 4
+        minNeurons = 4,
+        maxNeurons = 16,
+        dNeurons = 2
     )   # Just some sample numbers, check the code to find out what it does
     pConst.calcLearningRates(0.0005, 0.01, 0.0005)
-    pConst.calcBatchSize(1, 8, 1)
+    pConst.calcBatchSize(1, 5, 1)
 
     # Less realistic values but this is for testing baby, relax
     # pConst.calcNetworkArchitectures(2, 2, 31, 1) 
     # pConst.calcLearningRates(0.001, 0.1, 0.1)
     # pConst.calcBatchSize(1,5,1)
     pConst.calcParamList()  # 12 different parameter sets
-    print(len(pConst.paramList))
+    paramList = pConst.getParamList()
+    with open("paramsList.txt", "w") as f:
+        for params in paramList:
+            f.write(f"{params}")
+            f.write("\n")
 
     # Evaluate the model 
-    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = get_Data(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
-    netConst = NetworkConstructor(len(training_data[0]), len(training_labels[0]), maxEpochs)
-    netConst.explore_different_architectures(training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels, pConst.paramList)
+    dataFactory = StockDataFactory(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
+    training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = dataFactory.get_stock_data()
+    # training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = get_Data(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
+    netConst = NetworksConstructor(len(training_data[0]), len(training_labels[0]), maxEpochs)
+    netConst.explore_different_architectures(training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels, paramList)
     maes = NetworksDict()
 
     results_handler = ResultsHandler(maes)
-    results_handler.save_results("NN_results_final")
+    results_handler.save_results("NN_results_lessdata")
+    results_handler.save_results_readable("NN_results_lessdata_readable")
 
 def test_statistical_analysis():
     list_ = ["NN_results_2000", "NN_results_3000", "NN_results_4000"]
@@ -110,8 +117,8 @@ if __name__ == "__main__":
     #print(model.model_summary())
     testNetworkConstructor(
         stockCode="AAPL",
-        pointsPerSet=20,
-        numSets=500,
+        pointsPerSet=10,
+        numSets=50,
         labelsPerSet=1,
         testingPercentage=0.8,
         validationPercentage=0.1,

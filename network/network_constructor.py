@@ -20,7 +20,7 @@ ParamTuple = list[
         ]
     ]
 
-LIST_BB = list(range(1000, 1000001, 1000))
+LIST_BB = list(range(10, 1000001, 10))
 
 class NetworksConstructor:
     results = []
