@@ -86,7 +86,6 @@ class StockDataFactory:
 
         # Generate labels from the data
         data, labels = self._get_labeled_data(residuals)
-        print(data)
 
         # Apply a train, test, validation split on the data
         (
@@ -167,7 +166,6 @@ class StockDataFactory:
         :return: _description_
         :rtype: tuple[list[list[float]], list[list[float]]]
         """
-        print(residuals)
         data, labels = self._data_processor.generate_labels(
             residuals,
             self._labels_per_set

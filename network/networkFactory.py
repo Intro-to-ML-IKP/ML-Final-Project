@@ -26,7 +26,7 @@ class NetworkFactory:
         self._activations = activations
         self._input_shape = input_shape
         self._output_shape = output_shape
-        self._model = Model()#self._construct_model(model_shape, activations, input_shape, output_size)
+        self._model = Model()
 
     def train(
             self,
@@ -50,21 +50,17 @@ class NetworkFactory:
         self._model.trainModel(training_data, training_labels, validation_data, validation_labels, epochs, batch_size)
 
     def predict(self, data: list[float], number_of_predictions: int) -> list[float]:
-        if number_of_predictions > len(data):
-            difference = number_of_predictions - len(data)
-
         sliding_data = data
-        for _ in range(number_of_predictions):
-            # Make the prediction
-            prediction = self._model.predict(sliding_data)
+        for current_prediction in range(number_of_predictions):
+            # Slice the data
+            sliced_data = sliding_data[current_prediction:]
 
-            if number_of_predictions > len(data):
-                difference = number_of_predictions - len(data)
+            # Make the prediction
+            prediction = self._model.predict(sliced_data)
                 
             # Add the prediction to the sliding data
             sliding_data.append(prediction)
 
-            # Remove the first datum in the data
-            sliding_data.pop(0)
-        
-        return sliding_data
+        # Separate the predictions from the input data
+        predictions = sliding_data[len(data):]
+        return predictions
