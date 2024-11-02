@@ -90,8 +90,8 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     maes = NetworksDict()
 
     results_handler = ResultsHandler(maes)
-    results_handler.save_results("NN_results_lessdata", "test")
-    results_handler.save_results_readable("NN_results_lessdata_readable", "test")
+    results_handler.save_results("NN_results_lessdata", "test2")
+    results_handler.save_results_readable("NN_results_lessdata_readable", "test2")
 
 def test_statistical_analysis():
     list_ = ["NN_results_2000", "NN_results_3000", "NN_results_4000"]
