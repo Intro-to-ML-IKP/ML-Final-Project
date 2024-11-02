@@ -70,10 +70,8 @@ class DataReader:
                 ]
             
             # Check if we have enough data          
-            if self._validate_data_sufficiency(
-                required_data_points
-                ):
-                return
+            if self._validate_data_sufficiency(required_data_points):
+                return self.data
             
             # Otherwise, increase the date range and retry
             attempts += 1

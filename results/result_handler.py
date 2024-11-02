@@ -7,6 +7,7 @@ from pandas.core.series import Series
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from scipy.stats import pearsonr
+import numpy as np
 
 
 class ResultsHandler:
@@ -44,7 +45,7 @@ class ResultsHandler:
         :filename type: str
         """
 
-        filename = f"results\\{foldername}\\{filename}.pkl"
+        filename = f"results/{foldername}/{filename}.pkl"
         if self._results is not None:
             if os.path.exists(filename):
                 self._options_if_file_exists(filename)
@@ -52,6 +53,32 @@ class ResultsHandler:
                 with open(filename, "wb") as file:
                     pickle.dump(self._results, file)
                 print(f"Results saved successfully in dir `{filename}.pkl`.")
+        else:
+            print(
+                "There aren't any results to save."
+                "The saving was unsuccessful."
+                )
+            
+    def save_results_readable(
+            self,
+            filename: str,
+            foldername: str
+    ) -> None:
+        """
+        Saving the dictionary to a file in human-readable format.
+
+        :param results: a dictionary of results
+        :results type: dict
+        :param filename: the name of the file to be saved
+        :filename type: str
+        """
+
+        filename = f"results\\{foldername}\\{filename}.pkl"
+        if self._results is not None:
+            if os.path.exists(filename):
+                self._options_if_file_exists(filename)
+            else:
+                np.savetxt(filename, self._results)
         else:
             print(
                 "There aren't any results to save."

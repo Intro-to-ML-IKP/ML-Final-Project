@@ -16,6 +16,10 @@ class ParameterConstructor:
                 "You need to make sure that you compute the"
                 "parameter list first, you can do that by calling"
                 "`calcParamList()` method.")
+        
+    # This is ugly I know, dont really care
+    def getParamList(self):
+        return self._paramList
 
     def calcNetworkArchitectures(
         self, 
@@ -101,9 +105,9 @@ class ParameterConstructor:
         are not computed beforehand
         """
         # Check if the necessary lists are available
-        if (not hasattr(self, 'architectures')
-            and not hasattr(self, 'learningRates')
-            and not hasattr(self, 'batchSizes')
+        if (not hasattr(self, '_architectures')
+            and not hasattr(self, '_learningRates')
+            and not hasattr(self, '_batchSizes')
             ):
             raise ValueError(
                 "You need to compute architectures, learning rates," + 
