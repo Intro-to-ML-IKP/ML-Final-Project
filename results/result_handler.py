@@ -14,11 +14,8 @@ class ResultsHandler:
     """
     This class is used to handle saving and loading of results.
     """
-    def __init__(
-            self,
-            results: dict = None
-            ) -> None:
-        self._results = results
+    def __init__(self) -> None:
+        self._results = None
         self._df = None
 
     @property
@@ -101,18 +98,19 @@ class ResultsHandler:
             with open(filename, "rb") as file:
                 loaded_data = pickle.load(file)
             self._results = loaded_data
-            self._df = self._df
+            self._df = self._generate_pd_dataframe()
             print("Results loaded successfully!")
         else:
             print(f"There is no dir `{filename}` found")
 
     def load_multiple_results(
             self,
-            filenames: list[str]
+            filenames: list[str],
+            foldername: str
             ) -> None:
         results = pd.DataFrame()
         for filename in filenames:
-            self.load_results(filename)
+            self.load_results(filename, foldername)
             df2 = self._generate_pd_dataframe()
             self._results = None
             results = pd.concat([results, df2], ignore_index=True)
