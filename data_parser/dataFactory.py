@@ -86,7 +86,6 @@ class StockDataFactory:
 
         # Generate labels from the data
         data, labels = self._get_labeled_data(residuals)
-        print(data)
 
         # Apply a train, test, validation split on the data
         (

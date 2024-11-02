@@ -2,6 +2,8 @@ from network.network import Model
 from results.result_handler import ResultsHandler
 from multiprocessing import Pool
 from typing import Tuple
+import tensorflow as tf
+tf.keras.utils.disable_interactive_logging()  # Disable progress bars
 
 # Define the type for a single parameter tuple
 ParamTuple = list[
@@ -143,10 +145,12 @@ class NetworksConstructor:
         print(f"Now training the model {count}/{maxCount}")
         
         # Intermediatly saves duiring simulations
-        if count in LIST_BB:
-            maes = NetworksDict()
-            results_handler = ResultsHandler(maes)
-            results_handler.save_results(f"NN_results_{count}_lessData", "test2")
+        # if count in LIST_BB:
+        #     maes = NetworksDict()
+        #     results_handler = ResultsHandler(maes)
+        #     results_handler.save_results(f"NN_results_{count}_lessData", "test2")
+
+        return (mae, paramSet)
 
     def explore_different_architectures(
         self,
@@ -206,9 +210,10 @@ class NetworksConstructor:
             full_param_list.append(param_tuple)
         
         # Perform exploration on each parameter combination
-        with Pool(processes=1) as p:
-            p.map(self._explore, full_param_list)
+        with Pool(processes=50) as p:
+            results = p.map(self._explore, full_param_list)
 
+        return results
 
 class NetworksDictMeta(type):
     """
