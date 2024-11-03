@@ -1,3 +1,4 @@
+import numpy as np
 from typing import Any
 from tensorflow import keras
 from tensorflow.keras.models import Sequential # type: ignore
@@ -72,10 +73,10 @@ class Model:
 
     def trainModel(
             self,
-            training_data: list[float],
-            training_labels: list[float],
-            validation_data: list[float],
-            validation_labels: list[float],
+            training_data: np.ndarray,
+            training_labels: np.ndarray,
+            validation_data: np.ndarray,
+            validation_labels: np.ndarray,
             epochs: int,
             batch_size: int
             ) -> None:
@@ -84,15 +85,15 @@ class Model:
 
         :param training_data: Data for training, matching the input shape of 
         the model.
-        :type training_data: list[float]
+        :type training_data: np.ndarray
         :param training_labels: Labels for training data, matching the output 
         shape of the model.
-        :type training_labels: list[float]
+        :type training_labels: np.ndarray
         :param validation_data: Data for validation during training to prevent 
         overfitting.
-        :type validation_data: list[float]
+        :type validation_data: np.ndarray
         :param validation_labels: Labels for validation data.
-        :type validation_labels: list[float]
+        :type validation_labels: np.ndarray
         :param epochs: Number of training iterations.
         :type epochs: int
         :param batch_size: Data points per batch, the number processed before 
@@ -117,15 +118,15 @@ class Model:
 
     def predict(
             self,
-            data: list[float]
-            ) -> list[float]:
+            data: np.ndarray
+            ) -> np.ndarray:
         """
         Makes a prediction on the specified data using the trained model
         
         :param data: the data you want to predict
-        :type data: list[float]
+        :type data: np.ndarray
         :return: the predictions
-        :type return: list[float]
+        :type return: np.ndarray
         """
         self._model_validator()
         predictions = self.model.predict(data)
@@ -133,16 +134,16 @@ class Model:
     
     def compute_mae(
             self,
-            testing_data: list[float],
-            testing_labels: list[float]
+            testing_data: np.ndarray,
+            testing_labels: np.ndarray
             ) -> float:
         """
         Computes the mean absolute error of the model.
 
         :param testing_data: the testing data
-        :type testing_data: list[float]
+        :type testing_data: np.ndarray
         :param testing_labels: the testing target data
-        :type testing_labels: list[float]
+        :type testing_labels: np.ndarray
         :return: the mean absolute error
         :rtype: float
         """

@@ -10,7 +10,7 @@ import math
 class DataProcessor:
     def __init__(
             self,
-            data: list[tuple[str,float,float,float,float]],
+            data: list[tuple[str,float,float,float,float]]|None,
             ) -> None:
         """
         A way of instantating a proccessor object for stock data.
@@ -22,7 +22,8 @@ class DataProcessor:
         """
         self._dates = None
         self._data = None
-        self._unpack_data(data)
+        if data is not None:
+            self._unpack_data(data)
     
     @property
     def data(self) -> tuple[float,float,float,float]:

@@ -111,6 +111,99 @@ class StockDataFactory:
             testing_labels
             )
     
+    def get_raw_data(
+            self,
+            number_of_points: int
+            ) -> list[tuple[str,float,float,float,float]]:
+        """
+        A way of getting a number of raw datapoints.
+
+        :param number_of_points: the number of datapoints
+        :type number_of_points: int
+        :return: raw data from the DataReader
+        :rtype: list[tuple[str,float,float,float,float]]
+        """
+        return DataReader(
+            self._stock_name
+            ).getData(number_of_points = number_of_points, number_of_sets = 1)
+
+    def get_sma(
+            self,
+            data: list[tuple[str,float,float,float,float]],
+            sma_lookback_period: int
+            ) -> list[float]:
+        """
+        A way of getting the simple moving average of raw data.
+
+        :param data: the data you want to get the simple moving
+        average of.
+        :type data: list[tuple[str,float,float,float,float]]
+        :param sma_lookback_period: the lookback period for the
+        calculation of the SME average. This is the number of datapoints
+        used to calculate the SME. Example:
+        if sma_lookback_period = 3:
+            take: mean(last 3 points)
+        :type sma_lookback_period: int
+        :return: returns: SMA
+        :rtype: list[float]
+        """
+        stock_data = DataProcessor(data).data
+        return DataProcessor(None).\
+            calculate_SMA(stock_data, length = sma_lookback_period)
+    
+    def get_extrapolated_sma(
+            self,
+            sma_values: list[float],
+            number_of_predictions: int,
+            regression_window: int|None = None
+            ) -> list[float]:
+        """
+        Makes an extrapolation of the SMA using linear regression,
+        for a specified period of time.
+
+        :param sma_values: the SMA to be extraplated
+        :type sma_values: list[float]
+        :param number_of_predictions: the number of points that need
+        extrapolation
+        :type number_of_predictions: int
+        :param regression_window: specifies the regression window for the
+        linear regression, defaults to None
+        :type regression_window: int | None, optional
+        :return: a list of extapolated SMA
+        :rtype: list[float]
+        """
+        start = regression_window
+        if regression_window is None:
+            if number_of_predictions > len(sma_values):
+                start = 0
+            else:
+                start = number_of_predictions
+        return DataProcessor(None).\
+            extrapolate_the_SMA(
+                SMA_values = sma_values,
+                future_periods = number_of_predictions,
+                start = -start)
+    
+    def get_residuals_data(
+            self,
+            raw_data: list[tuple[str, float, float, float, float]],
+            sma: list[float]
+            ) -> list[float]:
+        """
+        A way of getting the residuals of the SMA and the
+        closing prices.
+
+        :param raw_data: the raw data
+        :type raw_data: _type_
+        :param sma: the SMA of the raw data
+        :type sma: _type_
+        :return: the residuals
+        :rtype: list[float]
+        """
+        stock_data = DataProcessor(raw_data).data
+        return DataProcessor(None).\
+            calculate_residuals(stock_data, sma)
+    
     def _generate_sets(self) -> list[list[float]]:
         """
         This method is used to generate sets from stock data.

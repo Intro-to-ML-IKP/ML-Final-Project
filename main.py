@@ -6,6 +6,8 @@ from network.parameterConstructor import ParameterConstructor
 from network.network_constructor import NetworksConstructor, NetworksDict
 from results.result_handler import ResultsHandler
 from data_parser.dataFactory import StockDataFactory
+from forcast.forecastFactory_initializer import ForecastFactoryInitializer
+from forcast.forcastFactory import ForcastFactory
 
 def testing_SMA():
     dR = DataReader("AAPL")                                  # Initialize for AAPL stock
@@ -113,6 +115,14 @@ def test_statistical_analysis():
     results.create_correlation_heatmap()
     param_ranges = results.get_parmeter_ranges()
     print(param_ranges)
+
+def test_forcast():
+    param_getter = ForecastFactoryInitializer()
+    model_parameters = param_getter.generate_model_parameters()
+    datafactory_parameters = param_getter.generate_datafactory_parameters()
+    forcaster = ForcastFactory("AAPL", model_parameters, datafactory_parameters)
+    forcaster.predict(10)
+    forcaster.plot_predictions()
     
 if __name__ == "__main__":
     # main("AAPL", 5, 10, 3, 0.8, 0.1, 0.001, 50, 1)
@@ -120,13 +130,14 @@ if __name__ == "__main__":
     #model = Model()
     #model.load_model("AAPL")
     #print(model.model_summary())
-    testNetworkConstructor(
-        stockCode="AAPL",
-        pointsPerSet=10,
-        numSets=50,
-        labelsPerSet=1,
-        testingPercentage=0.8,
-        validationPercentage=0.1,
-        maxEpochs=50)
+    # testNetworkConstructor(
+    #     stockCode="AAPL",
+    #     pointsPerSet=10,
+    #     numSets=50,
+    #     labelsPerSet=1,
+    #     testingPercentage=0.8,
+    #     validationPercentage=0.1,
+    #     maxEpochs=50)
     # testNetworkConstructor("AAPL", 10, 5, 3, 0.8, 0.1, 50)
     # test_statistical_analysis()
+    test_forcast()

@@ -1,4 +1,7 @@
+import numpy as np
+import tensorflow as tf
 from network.network import Model
+
 
 class NetworkFactory:
     def __init__(
@@ -30,10 +33,10 @@ class NetworkFactory:
 
     def train(
             self,
-            training_data: list[float],
-            training_labels: list[float],
-            validation_data: list[float],
-            validation_labels: list[float],
+            training_data: np.ndarray,
+            training_labels: np.ndarray,
+            validation_data: np.ndarray,
+            validation_labels: np.ndarray,
             learning_rate: float,
             lossFunc: str,
             metrics: list[str],
@@ -49,18 +52,29 @@ class NetworkFactory:
         # Train the model
         self._model.trainModel(training_data, training_labels, validation_data, validation_labels, epochs, batch_size)
 
-    def predict(self, data: list[float], number_of_predictions: int) -> list[float]:
+    def predict(self, data: tf.Tensor, number_of_predictions: int) -> list[float]:
+        # Check if the input is a tensor
+        if not isinstance(data, tf.Tensor):
+            raise ValueError("To predict use data of type <class 'tf.Tensor'>! "
+                            f"You are trying to use {type(data)}")
+
         sliding_data = data
         for current_prediction in range(number_of_predictions):
             # Slice the data
-            sliced_data = sliding_data[current_prediction:]
+            sliced_data = sliding_data[0][current_prediction:]
+            preprocessed_data = tf.reshape(sliced_data, (-1, 9))
 
             # Make the prediction
-            prediction = self._model.predict(sliced_data)
-                
-            # Add the prediction to the sliding data
-            sliding_data.append(prediction)
+            prediction = self._model.predict(preprocessed_data)
 
-        # Separate the predictions from the input data
-        predictions = sliding_data[len(data):]
+            # Adjust the shape of the prediction
+            prediction = tf.tile(prediction, [1, sliding_data.shape[1]])
+
+            preprocessed_prediction = tf.reshape(prediction[0][0], (-1,1))
+
+            # Add the prediction to the sliding data
+            sliding_data = tf.concat([sliding_data, preprocessed_prediction], axis=1)
+
+        # Separate the predictions from the input data and convert to list
+        predictions = sliding_data[0][len(data[0]):].numpy().tolist()
         return predictions

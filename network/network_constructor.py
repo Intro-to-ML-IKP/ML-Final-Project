@@ -209,7 +209,7 @@ class NetworksConstructor:
             full_param_list.append(param_tuple)
         
         # Perform exploration on each parameter combination
-        with Pool(processes=50) as p:
+        with Pool(processes=1) as p:
             results = p.map(self._explore, full_param_list)
 
         return results

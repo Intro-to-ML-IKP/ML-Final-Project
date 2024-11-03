@@ -13,6 +13,7 @@ class PlotStocks:
             extrapolated_sma: list[float] = None,
             residuals: list[float] = None,
             predicted_closing_prices: list[float] = None,
+            predicted_residuals: list[float] = None,
             sma_length: int = 3
             ):
         self.dates, self.open_, self.high, self.low, self.close = list(zip(*stockData))
@@ -22,14 +23,15 @@ class PlotStocks:
         self.residuals = residuals
         self.predicted_closing_prices = predicted_closing_prices
         self.masterPlot_on = False
+        self.predicted_residuals = predicted_residuals
 
-    def masterPlot(self, simpleMovingAverage = True, predictedClosingPrices = False):
+    def masterPlot(self, simpleMovingAverage = True, predictedClosingPrices = False, predictedResiduals = False):
         self.masterPlot_on = True
         _, (ax, ax1) = plt.subplots(2, 1, figsize=(8, 6), gridspec_kw={'height_ratios': [3, 1]})
         
         # Create the Plots
         self._plot_candlestick(ax, simpleMovingAverage, predictedClosingPrices)
-        self._plot_residuals(ax1)
+        self._plot_residuals(ax1, predictedResiduals)
 
         # Adjust the spacing between subplots (increase hspace)
         plt.subplots_adjust(hspace=0.5)
@@ -99,7 +101,7 @@ class PlotStocks:
 
         plt.show()
 
-    def _plot_residuals(self, ax):
+    def _plot_residuals(self, ax, predictedResiduals = False):
         # Number of data points
         num_data = len(self.residuals)
         
@@ -107,7 +109,15 @@ class PlotStocks:
         dates = self.dates[-num_data:]#range(num_data)
 
         ax.plot(dates, self.residuals, color="black", label="Residuals")
+        
+        if predictedResiduals:
+            nr_days_extrapolated = len(self.predicted_residuals)
+            last_day = self.dates[-1]
 
+            future_dates = pd.bdate_range(start=last_day, periods=nr_days_extrapolated).tolist()
+
+            ax.plot(future_dates, self.predicted_residuals, color="green", label="Predicted Residuals")
+            
         # Formatting
         ax.set_title("Plot of the residuals")
         ax.set_ylabel("Value")
@@ -129,12 +139,13 @@ class PlotStocks:
 
         future_dates_numeric = mdates.date2num(future_dates)
         
-        for predicted_closing_price in self.predicted_closing_prices:
+        for count, predicted_closing_price in enumerate(self.predicted_closing_prices):
+            rounded_closing_price = round(predicted_closing_price, 2)
             ax.hlines(
-                predicted_closing_price,
-                future_dates_numeric - 0.2,
-                future_dates_numeric + 0.2,
-                color = "blue",
-                label = f"Predicted Closing Prices ({nr_days_extrapolated} days)"
+                rounded_closing_price,
+                future_dates_numeric[count] - 0.2,
+                future_dates_numeric[count] + 0.2,
+                color = "green",
+                label = "Predicted Closing Prices" if count == 0 else None
                 )
             
