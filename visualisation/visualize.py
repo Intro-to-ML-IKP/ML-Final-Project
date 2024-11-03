@@ -59,9 +59,6 @@ class PlotStocks:
 
             # Determine the color based on the open and close prices
             color = 'green' if self.close[i] > self.open_[i] else 'red'
-            print("open", "high", "low", "close")
-            print(self.open_[i], self.high[i], self.low[i], self.close[i])
-            print(color)
             # Plot the rectangle (the body) between open and close
             ax.add_patch(plt.Rectangle((dates_numeric[i] - 0.2, self.open_[i]), 0.4, abs(self.close[i] - self.open_[i]), color=color))
 
