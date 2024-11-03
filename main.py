@@ -86,12 +86,17 @@ def testNetworkConstructor(stockCode, pointsPerSet, numSets, labelsPerSet, testi
     training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = dataFactory.get_stock_data()
     # training_data, validation_data, testing_data, training_labels, validation_labels, testing_labels = get_Data(stockCode, pointsPerSet, numSets, labelsPerSet, testingPercentage, validationPercentage)
     netConst = NetworksConstructor(len(training_data[0]), len(training_labels[0]), maxEpochs)
-    netConst.explore_different_architectures(training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels, paramList)
-    maes = NetworksDict()
+    evaluatedArchitectures = netConst.explore_different_architectures(training_data, training_labels, validation_data, validation_labels, testing_data, testing_labels, paramList)
+    
+    with open("output.txt", "w") as f:
+        for arch in evaluatedArchitectures:
+            f.write(f"{arch}\n")
 
-    results_handler = ResultsHandler(maes)
-    results_handler.save_results("NN_results_lessdata", "test")
-    results_handler.save_results_readable("NN_results_lessdata_readable", "test")
+    # maes = NetworksDict()
+
+    # results_handler = ResultsHandler(maes)
+    # results_handler.save_results("NN_results_lessdata", "test2")
+    # results_handler.save_results_readable("NN_results_lessdata_readable", "test2")
 
 def test_statistical_analysis():
     list_ = ["NN_results_2000", "NN_results_3000", "NN_results_4000"]

@@ -2,6 +2,8 @@ from network.network import Model
 from results.result_handler import ResultsHandler
 from multiprocessing import Pool
 from typing import Tuple
+import tensorflow as tf
+tf.keras.utils.disable_interactive_logging()  # Disable progress bars
 
 # Define the type for a single parameter tuple
 ParamTuple = list[
@@ -207,9 +209,10 @@ class NetworksConstructor:
             full_param_list.append(param_tuple)
         
         # Perform exploration on each parameter combination
-        with Pool(processes=1) as p:
-            p.map(self._explore, full_param_list)
-    
+        with Pool(processes=50) as p:
+            results = p.map(self._explore, full_param_list)
+
+        return results
 
 class NetworksDict:
     """
