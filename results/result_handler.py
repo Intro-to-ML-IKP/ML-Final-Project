@@ -14,8 +14,8 @@ class ResultsHandler:
     """
     This class is used to handle saving and loading of results.
     """
-    def __init__(self) -> None:
-        self._results = None
+    def __init__(self, results: dict) -> None:
+        self._results = results
         self._df = None
 
     @property
@@ -41,15 +41,22 @@ class ResultsHandler:
         :param filename: the name of the file to be saved
         :filename type: str
         """
+        # Define the base directory path for results
+        base_dir = os.path.join(os.getcwd(), "results", foldername)
 
-        filename = f"results/{foldername}/{filename}.pkl"
+        # Ensure the directory exists
+        os.makedirs(base_dir, exist_ok=True)
+
+        # Define the complete filename with path
+        full_filename = os.path.join(base_dir, filename)
+
         if self._results is not None:
-            if os.path.exists(filename):
-                self._options_if_file_exists(filename)
+            if os.path.exists(full_filename):
+                self._options_if_file_exists(full_filename)
             else:
-                with open(filename, "wb") as file:
+                with open(full_filename, "wb") as file:
                     pickle.dump(self._results, file)
-                print(f"Results saved successfully in dir `{filename}.pkl`.")
+                print(f"Results saved successfully in dir `{full_filename}.pkl`.")
         else:
             print(
                 "There aren't any results to save."

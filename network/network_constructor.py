@@ -23,8 +23,6 @@ ParamTuple = list[
 LIST_BB = list(range(1000, 1000001, 1000))
 
 class NetworksConstructor:
-    results = []
-
     def __init__(
             self,
             input_size: int,
@@ -41,6 +39,7 @@ class NetworksConstructor:
         :param epochs: Maximum number of epochs for training.
         :type epochs: int
         """
+        self.results = []
         self.input_size = input_size
         self.output_size = output_size
         self.epochs = epochs
@@ -135,7 +134,8 @@ class NetworksConstructor:
             testing_data,
             testing_labels
             )
-        NetworksConstructor.results.append(
+        
+        self.results.append(
             [mae, paramSet]
             )
 
@@ -144,9 +144,10 @@ class NetworksConstructor:
         
         # Intermediatly saves duiring simulations
         if count in LIST_BB:
-            maes = NetworksDict()
+            maes = NetworksDict()(self.results)
+            print(maes)
             results_handler = ResultsHandler(maes)
-            results_handler.save_results(f"NN_results_{count}_lessData", "test")
+            results_handler.save_results(f"NN_results_{count}_lessData", "test_2")
 
     def explore_different_architectures(
         self,
@@ -206,24 +207,11 @@ class NetworksConstructor:
             full_param_list.append(param_tuple)
         
         # Perform exploration on each parameter combination
-        with Pool(processes=50) as p:
+        with Pool(processes=1) as p:
             p.map(self._explore, full_param_list)
-
-
-class NetworksDictMeta(type):
-    """
-    This class is the base metaclass for NetworksDict.
-    """
-    def __call__(cls, *args, **kwargs) -> dict:
-        """
-        Allows the class to be called like a function.
-        """
-        sorted_results = cls._sort_results()
-        for mae, params in sorted_results.items():
-            print(f"MAE: {mae}, Hidden Layers: {params[0]}; Learning Rate: {params[1]}; Batch Size: {params[2]}")
-        return sorted_results
     
-class NetworksDict(metaclass=NetworksDictMeta):
+
+class NetworksDict:
     """
     This metaclass is resposible for accessing the
     NetworksConstructor's attribute results, convert the list
@@ -235,7 +223,17 @@ class NetworksDict(metaclass=NetworksDictMeta):
     NetworksConstructor.
     """
     @classmethod
-    def _list_to_dict(self) -> dict:
+    def __call__(cls, result_list: list[list[float]]) -> dict:
+        """
+        Allows the class to be called like a function.
+        """
+        sorted_results = cls._sort_results(result_list)
+        for mae, params in sorted_results.items():
+            print(f"MAE: {mae}, Hidden Layers: {params[0]}; Learning Rate: {params[1]}; Batch Size: {params[2]}")
+        return sorted_results
+    
+    @classmethod
+    def _list_to_dict(cls, result_list: list[list[float]]) -> dict:
         """
         Gets the NetworksConstructor's results and makes
         them into a dictionary.
@@ -246,7 +244,7 @@ class NetworksDict(metaclass=NetworksDictMeta):
         nnDict = {}
 
         # Access the result list in NetworksConstructor
-        nn_results = NetworksConstructor.results
+        nn_results = result_list
 
         # Create a dictionary with MAEs as keys and parameters as values
         for mae, params in nn_results:
@@ -254,14 +252,14 @@ class NetworksDict(metaclass=NetworksDictMeta):
         return nnDict
 
     @classmethod
-    def _sort_results(self) -> dict:
+    def _sort_results(cls, result_list: list[list[float]]) -> dict:
         """
         Sort the results by the mae (smallest to largest)
 
         :return: a sorted dict
         :type return: dict
         """
-        nnDict = self._list_to_dict()
+        nnDict = cls._list_to_dict(result_list)
         sorted_keys = sorted(nnDict.keys())
         sorted_results = {key: nnDict[key] for key in sorted_keys}
         return sorted_results
