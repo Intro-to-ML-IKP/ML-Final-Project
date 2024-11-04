@@ -1,4 +1,4 @@
-class ForecastFactoryInitializer:
+class ForcastFactoryInitializer:
     def generate_model_parameters(
             self,
             architecture: list[int] = [13, 24],

@@ -113,18 +113,23 @@ class StockDataFactory:
     
     def get_raw_data(
             self,
-            number_of_points: int
+            number_of_points: int,
+            end_date: str = "2024-09-01",
+            interval: str = "1d"
             ) -> list[tuple[str,float,float,float,float]]:
         """
         A way of getting a number of raw datapoints.
 
         :param number_of_points: the number of datapoints
         :type number_of_points: int
-        :return: raw data from the DataReader
+        :return: raw data from the DataReader.
+        Stock data in the format [(date, open, high, low, close)]
         :rtype: list[tuple[str,float,float,float,float]]
         """
         return DataReader(
-            self._stock_name
+            stock_name = self._stock_name,
+            end_date = end_date,
+            interval = interval
             ).getData(number_of_points = number_of_points, number_of_sets = 1)
 
     def get_sma(
@@ -182,7 +187,8 @@ class StockDataFactory:
             extrapolate_the_SMA(
                 SMA_values = sma_values,
                 future_periods = number_of_predictions,
-                start = -start)
+                start = -start,
+                )
     
     def get_residuals_data(
             self,
@@ -203,6 +209,21 @@ class StockDataFactory:
         stock_data = DataProcessor(raw_data).data
         return DataProcessor(None).\
             calculate_residuals(stock_data, sma)
+    
+    def get_closing_prices(
+            self,
+            raw_data: list[tuple[str, float, float, float, float]]
+            ) -> list[float]:
+        """
+        Gets closing prices from raw data.
+
+        :param raw_data: the raw data
+        :type raw_data: list[tuple[str, float, float, float, float]]
+        :return: the closing prices
+        :rtype: tuple[float, float, float, float]
+        """
+        _, _, _, closing_prices = zip(*DataProcessor(raw_data).data)
+        return closing_prices
     
     def _generate_sets(self) -> list[list[float]]:
         """

@@ -14,9 +14,10 @@ class ResultsHandler:
     """
     This class is used to handle saving and loading of results.
     """
-    def __init__(self, results: dict) -> None:
+    def __init__(self, results: dict = None) -> None:
         self._results = results
-        self._df = None
+        if results is not None:
+            self._df = self._generate_pd_dataframe()
 
     @property
     def results(self) -> dict:
@@ -27,6 +28,17 @@ class ResultsHandler:
         :rtype: dict
         """
         return self._results
+    
+    @property
+    def df(self) -> pd.DataFrame:
+        """
+        Used to retrieve the dataframe.
+
+        :return: the dataframe containiong the information
+        for the different networks
+        :rtype: dict
+        """
+        return self._df
 
     def save_results(
             self,

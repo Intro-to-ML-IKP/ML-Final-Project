@@ -23,7 +23,7 @@ class DataReader:
         self._validate_date(end_date)
         self.stock_name = stock_name
         self.interval = interval
-        self.end_date = "2024-09-01"
+        self.end_date = end_date
         self.data: list[float]|None = None
         self.labels: list[float]|None = None
 
@@ -43,7 +43,7 @@ class DataReader:
         Default is 100.
         :type number_of_sets: int
 
-        :return: Stock data in the format [(open, high, low, close)].
+        :return: Stock data in the format [(datetime, open, high, low, close)].
         :rtype: list[tuple[float, float, float, float]]
         """
         required_data_points = number_of_points * number_of_sets

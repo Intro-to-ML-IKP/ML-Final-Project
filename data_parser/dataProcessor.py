@@ -21,7 +21,7 @@ class DataProcessor:
         :type data: list[tuple[str,float,float,float,float]]
         """
         self._dates = None
-        self._data = None
+        self._data: list[tuple[float, float, float, float]] = None
         if data is not None:
             self._unpack_data(data)
     
@@ -137,6 +137,7 @@ class DataProcessor:
 
         # Align with the data
         align_value = y_coord[-1]
+
         aligned_extrapolation = self._align_extrapolation(extrapolated_SMA, align_value)
 
         return aligned_extrapolation

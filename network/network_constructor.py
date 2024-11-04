@@ -3,7 +3,11 @@ from results.result_handler import ResultsHandler
 from multiprocessing import Pool
 from typing import Tuple
 import tensorflow as tf
-tf.keras.utils.disable_interactive_logging()  # Disable progress bars
+from functools import partial
+
+
+# Disable progress bars
+tf.keras.utils.disable_interactive_logging()
 
 # Define the type for a single parameter tuple
 ParamTuple = list[
@@ -22,7 +26,7 @@ ParamTuple = list[
         ]
     ]
 
-LIST_BB = list(range(1000, 1000001, 1000))
+LIST_BB = list(range(10, 1000001, 10))
 
 class NetworksConstructor:
     def __init__(
@@ -89,7 +93,24 @@ class NetworksConstructor:
             )
         return model
 
-    def _explore(self, params: ParamTuple):
+    def _explore(
+            self,
+            params: ParamTuple,
+            results_filename: str,
+            results_foldername: str
+            ) -> None:
+        """
+        Explores one model at a time
+
+        :param params: the parameters of the model.
+        :type params: ParamTuple
+        :param results_filename: the name of the file to be used
+        for intermidiate saving
+        :type results_filename: str
+        :param results_foldername: the folder where the intermidiate files
+        are saved
+        :type results_foldername: str
+        """
         # Unpacking the parameters
         (
             paramSet,
@@ -147,9 +168,11 @@ class NetworksConstructor:
         # Intermediatly saves duiring simulations
         if count in LIST_BB:
             maes = NetworksDict()(self.results)
-            print(maes)
             results_handler = ResultsHandler(maes)
-            results_handler.save_results(f"NN_results_{count}_lessData", "test_2")
+            results_handler.save_results(
+                f"{results_filename}_{count}",
+                results_foldername
+                )
 
     def explore_different_architectures(
         self,
@@ -160,7 +183,9 @@ class NetworksConstructor:
         testing_data: list[float],
         testing_labels: list[float],
         paramList: list[tuple[list[int], float, int]],
-    ) -> None:
+        results_filename: str,
+        results_foldername: str
+        ) -> None:
         """
         Generates a list of parameter sets to train different network models.
 
@@ -208,11 +233,17 @@ class NetworksConstructor:
             # Append the tuple to the full_param_list
             full_param_list.append(param_tuple)
         
+        # Locks self._explore's filename and foldername parameters
+        # in place so pool().map() can be applied to it
+        explore_with_args = partial(
+            self._explore,
+            results_filename=results_filename,
+            results_foldername=results_foldername
+            )
+        
         # Perform exploration on each parameter combination
         with Pool(processes=1) as p:
-            results = p.map(self._explore, full_param_list)
-
-        return results
+            p.map(explore_with_args, full_param_list)
 
 class NetworksDict:
     """
@@ -232,7 +263,12 @@ class NetworksDict:
         """
         sorted_results = cls._sort_results(result_list)
         for mae, params in sorted_results.items():
-            print(f"MAE: {mae}, Hidden Layers: {params[0]}; Learning Rate: {params[1]}; Batch Size: {params[2]}")
+            print(
+                f"MAE: {mae},"
+                f" Hidden Layers: {params[0]};"
+                f" Learning Rate: {params[1]};"
+                f" Batch Size: {params[2]}"
+                )
         return sorted_results
     
     @classmethod

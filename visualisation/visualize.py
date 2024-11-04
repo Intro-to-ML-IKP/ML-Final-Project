@@ -4,7 +4,6 @@ import matplotlib.dates as mdates
 from pandas.core.series import Series
 
 
-
 class PlotStocks:
     def __init__(
             self,
@@ -28,6 +27,9 @@ class PlotStocks:
     def masterPlot(self, simpleMovingAverage = True, predictedClosingPrices = False, predictedResiduals = False):
         self.masterPlot_on = True
         _, (ax, ax1) = plt.subplots(2, 1, figsize=(8, 6), gridspec_kw={'height_ratios': [3, 1]})
+
+        ax.grid(color='#D3D3D3', linestyle='-', linewidth=0.5)
+        ax1.grid(color='#D3D3D3', linestyle='-', linewidth=0.5)
         
         # Create the Plots
         self._plot_candlestick(ax, simpleMovingAverage, predictedClosingPrices)
@@ -46,7 +48,7 @@ class PlotStocks:
 
         plt.show()
 
-    def _plot_candlestick(self, ax, simpleMovingAverage = False, predictedClosingPrices = False):
+    def _plot_candlestick(self, ax, simpleMovingAverage, predictedClosingPrices):
         # Number of days
         num_data = len(self.high)
 
@@ -85,9 +87,9 @@ class PlotStocks:
             nr_days_extrapolated = len(self.extrapolated_sma)
             last_day = dates[-1]
 
-            future_dates = pd.bdate_range(start=last_day, periods=nr_days_extrapolated).tolist()
+            extrapolated_dates = pd.bdate_range(start=last_day, periods=nr_days_extrapolated).tolist()
             
-            ax.plot(future_dates, self.extrapolated_sma, color = "yellow", label = f"Extrapolated SMA ({nr_days_extrapolated} days)")
+            ax.plot(extrapolated_dates, self.extrapolated_sma, color = "yellow", label = f"Extrapolated SMA ({nr_days_extrapolated} days)")
 
     def plot_residuals(self):
         """
@@ -108,21 +110,24 @@ class PlotStocks:
         # Create an array of index values to represent days
         dates = self.dates[-num_data:]#range(num_data)
 
-        ax.plot(dates, self.residuals, color="black", label="Residuals")
+        ax.plot(dates, self.residuals, color="purple", label="Residuals")
         
         if predictedResiduals:
-            nr_days_extrapolated = len(self.predicted_residuals)
-            last_day = self.dates[-1]
-
-            future_dates = pd.bdate_range(start=last_day, periods=nr_days_extrapolated).tolist()
-
-            ax.plot(future_dates, self.predicted_residuals, color="green", label="Predicted Residuals")
+            self._plot_predicted_residuals(ax)
             
         # Formatting
         ax.set_title("Plot of the residuals")
         ax.set_ylabel("Value")
 
         ax.legend()
+
+    def _plot_predicted_residuals(self, ax):
+        nr_days_extrapolated = len(self.predicted_residuals)
+        last_day = self.dates[-1]
+
+        future_dates = pd.bdate_range(start=last_day, periods=nr_days_extrapolated).tolist()
+
+        ax.plot(future_dates, self.predicted_residuals, color="orange", label="Predicted Residuals")
 
     def plot_predicted_closing_prices(self):
         _, ax = plt.subplots()
@@ -148,4 +153,77 @@ class PlotStocks:
                 color = "green",
                 label = "Predicted Closing Prices" if count == 0 else None
                 )
+
+
+class PlotForcastComparison(PlotStocks):
+    def _plot_candlestick(self, ax, simpleMovingAverage, predictedClosingPrices):
+        # Number of days
+        num_data = len(self.high)
+
+        # Create an array of index values to represent days
+        dates = self.dates
+        dates_numeric = mdates.date2num(dates)
+
+        # Candlestick plotting
+        for i in range(num_data):
+            ax.hlines(
+                self.close[i],
+                dates_numeric[i] - 0.2,
+                dates_numeric[i] + 0.2,
+                color = "darkgreen",
+                label = "Observed Closing Prices" if i == 0 else None
+                )
+            
+        if simpleMovingAverage:
+            self._plot_sma(ax, dates)
+
+        if predictedClosingPrices:
+            self._plot_predicted_closing_prices(ax)
+
+        # Formatting
+        ax.set_title("Stock Data")
+        ax.set_ylabel('Price')
+
+        ax.legend()
+
+    def _plot_residuals(self, ax, predictedResiduals = False):
+        self.residuals = self.residuals[-len(self.dates):]
+        super()._plot_residuals(ax, predictedResiduals)
+
+    def _plot_sma(self, ax, dates):
+        # Delete the first n elements
+        x_val_SMA = dates
+        y_val_SMA = self.sma[-len(dates):]
+        ax.plot(x_val_SMA, y_val_SMA, color="gold", label = "SMA")
+        if self.extrapolated_sma is not None:
+            # Getting the x values for the days that the extrapolation happend
+            nr_days_extrapolated = len(self.extrapolated_sma)
+            
+            ax.plot(x_val_SMA, self.extrapolated_sma, color = "darkorange", label = f"Extrapolated SMA ({nr_days_extrapolated} days)")
+
+    def _plot_predicted_closing_prices(self, ax):
+        nr_days_extrapolated = len(self.predicted_closing_prices)
+        first_day = self.dates[0]
+
+        future_dates = pd.bdate_range(start=first_day, periods=nr_days_extrapolated).tolist()
+
+        future_dates_numeric = mdates.date2num(future_dates)
+        
+        for count, predicted_closing_price in enumerate(self.predicted_closing_prices):
+            rounded_closing_price = round(predicted_closing_price, 2)
+            ax.hlines(
+                rounded_closing_price,
+                future_dates_numeric[count] - 0.2,
+                future_dates_numeric[count] + 0.2,
+                color = "dodgerblue",
+                label = "Predicted Closing Prices" if count == 0 else None
+                )
+            
+    def _plot_predicted_residuals(self, ax):
+        nr_days_extrapolated = len(self.predicted_residuals)
+        last_day = self.dates[0]
+
+        future_dates = pd.bdate_range(start=last_day, periods=nr_days_extrapolated).tolist()
+
+        ax.plot(future_dates, self.predicted_residuals, color="green", label="Predicted Residuals")
             
