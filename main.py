@@ -305,7 +305,8 @@ def perform_statistical_analysis(filename: str, foldername: str) -> None:
     Performs statistical analysis on the results stored in a specified 
     file and folder. This includes calculating correlation coefficients, 
     p-values, conducting regression analysis, and generating visualizations 
-    such as scatterplot matrices and correlation heatmaps.
+    such as scatterplot matrices and correlation heatmaps. It also prints
+    the top 5 NNs.
 
     :param filename: The name of the file containing the results to analyze.
     :type filename: str
