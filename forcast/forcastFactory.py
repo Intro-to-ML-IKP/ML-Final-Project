@@ -11,6 +11,9 @@ from visualisation.visualize import PlotStocks, PlotForcastComparison
 
 
 class ForcastFactory:
+    """
+    Serves as a control point for making forcasts on data, using a NN.
+    """
     def __init__(
             self,
             stock_name: str,

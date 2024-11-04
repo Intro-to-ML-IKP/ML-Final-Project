@@ -26,9 +26,14 @@ ParamTuple = list[
         ]
     ]
 
-LIST_BB = list(range(10, 1000001, 10))
+LIST_BB = list(range(1000, 1000001, 1000))
 
 class NetworksConstructor:
+    """
+    A way of constructing NNs with different parameters to be
+    used in performing a statistical analysis to deremine the
+    optimal set of parameters.
+    """
     def __init__(
             self,
             input_size: int,
@@ -251,6 +256,13 @@ class NetworksDict:
     NetworksConstructor's attribute results, convert the list
     to a dictionarry and orders it. It also prints a nice
     human readable overview of the parameters of the Networks.
+    This class is intended to work only with the NetworksConstructor's
+    attribute 'self.results'. The way it should be used is:
+    
+    maes = NetworksDict()(self.results)
+
+    This would ensure that maes is a sorted dictionary of the results
+    from the exploration of the hyperparameter space.
 
     :call: Prints a human readable sorted NNs with their parameters.
     :return: A sorted dictionary of the results parameter in the class

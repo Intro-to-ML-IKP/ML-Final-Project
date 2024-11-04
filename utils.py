@@ -1,4 +1,14 @@
 def print_nice_title(title: str):
+    """
+    Prints a formatted title with a border of asterisks and equal signs, 
+    making it stand out as a section header.
+
+    The title will be centered within a 64-character width, padded with
+    asterisks on each side and equal signs above and below.
+
+    :param title: The title text to format and display.
+    :title type: str
+    """
     # Define the separator line
     separator = "=" * 64
     total_length = len(separator)
@@ -23,3 +33,4 @@ def print_nice_title(title: str):
     print(separator)
     print(pretty_title)
     print(separator)
+    

@@ -8,6 +8,9 @@ import math
 
 
 class DataProcessor:
+    """
+    Serves as a way to process stock data from Yahoo's API.
+    """
     def __init__(
             self,
             data: list[tuple[str,float,float,float,float]]|None,

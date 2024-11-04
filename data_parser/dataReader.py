@@ -3,6 +3,9 @@ from data_parser.stockGetter import Stock
 from pandas.core.series import Series
 
 class DataReader:
+    """
+    Serves as a way to read the stock data from Yahoo's API.
+    """
     def __init__(
             self,
             stock_name: str,

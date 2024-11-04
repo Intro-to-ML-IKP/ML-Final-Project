@@ -4,6 +4,10 @@ from network.network import Model
 
 
 class NetworkFactory:
+    """
+    Serves as an way of creating a Neural Network model, that can be trained
+    to predict.
+    """
     def __init__(
             self,
             model_shape : list[float],
@@ -43,6 +47,32 @@ class NetworkFactory:
             epochs: int,
             batch_size: int
             ) -> None:
+        """
+        Trains the model using specified training and validation data, with the 
+        given configurations for learning rate, loss function, metrics, epochs, 
+        and batch size.
+
+        :param training_data: Input data for training.
+        :type training_data: np.ndarray
+        :param training_labels: Target labels for training data.
+        :type training_labels: np.ndarray
+        :param validation_data: Data used to validate model during training.
+        :type validation_data: np.ndarray
+        :param validation_labels: Labels for validation data.
+        :type validation_labels: np.ndarray
+        :param learning_rate: Learning rate for the optimizer.
+        :type learning_rate: float
+        :param lossFunc: Loss function to be minimized.
+        :type lossFunc: str
+        :param metrics: List of metrics to evaluate during training.
+        :type metrics: list[str]
+        :param epochs: Number of training epochs.
+        :type epochs: int
+        :param batch_size: Batch size for training.
+        :type batch_size: int
+
+        :return: None
+        """
         # Create Sequential model
         self._model.create_sequential_model(self._model_shape, self._activations, self._input_shape, self._output_shape)
 
@@ -53,6 +83,21 @@ class NetworkFactory:
         self._model.trainModel(training_data, training_labels, validation_data, validation_labels, epochs, batch_size)
 
     def predict(self, data: tf.Tensor, number_of_predictions: int) -> list[float]:
+        """
+        Generates a specified number of predictions based on input data using a 
+        sliding window approach. Appends each new prediction to the input data 
+        to iteratively make future predictions.
+
+        :param data: Input data in the form of a Tensor.
+        :type data: tf.Tensor
+        :param number_of_predictions: Number of future predictions to generate.
+        :type number_of_predictions: int
+
+        :raises ValueError: If `data` is not of type `tf.Tensor`.
+
+        :return: A list containing the generated predictions.
+        :rtype: list[float]
+        """
         # Check if the input is a tensor
         if not isinstance(data, tf.Tensor):
             raise ValueError("To predict use data of type <class 'tf.Tensor'>! "

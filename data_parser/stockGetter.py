@@ -4,6 +4,9 @@ from pandas.core.series import Series
 
 
 class Stock:
+    """
+    Serves as a way to get stock data from Yahoo's API.
+    """
     def __init__(
             self,
             name: str,

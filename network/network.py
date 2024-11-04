@@ -8,6 +8,10 @@ from tensorflow.keras.callbacks import EarlyStopping # type: ignore
 from sklearn.metrics import mean_absolute_error
 
 class Model:
+    """
+    Used as an interface between keras' sequantial model
+    (that is used to create an MLP).
+    """
     def __init__(self):
         """
         Instantiates a model.
