@@ -2,9 +2,10 @@ from utils import print_nice_title
 from network.parameterConstructor import ParameterConstructor
 from network.network_constructor import NetworksConstructor, NetworksDict
 from results.result_handler import ResultsHandler
-from data_parser.dataFactory import StockDataFactory
+from data_parser.dataFactory import StockDataFactory, DataReader
 from forcast.forecastFactory_initializer import ForcastFactoryInitializer
 from forcast.forcastFactory import ForcastFactory
+from visualisation.visualize import PlotStocks
 
 
 def explore_different_architectures(
@@ -172,8 +173,8 @@ def explore_different_architectures(
     return sorted_results
 
 def forcast_closing_prices(
-        stock_name: str,
-        number_of_predictions: int,
+        stock_name: str = "AAPL",
+        number_of_predictions: int = 5,
         raw_data_amount: int = 50,
         sma_lookback_period: int = 3,
         regression_window: int | None = None,
@@ -352,6 +353,15 @@ def perform_statistical_analysis(filename: str, foldername: str) -> None:
     print_nice_title(top_5_networks)
     print(results.df[:5])
 
+def plot_data():
+    raw_data = DataReader("AAPL").getData(
+        number_of_points=10,
+        number_of_sets=50
+    )
+    plot_stocks = PlotStocks(raw_data)
+    plot_stocks.plot_candlestick()
+
+    
 
 if __name__ == "__main__":
     pass
