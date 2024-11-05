@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from scipy.stats import pearsonr
 import numpy as np
-
+from pathlib import Path
 
 class ResultsHandler:
     """
@@ -112,7 +112,7 @@ class ResultsHandler:
         :param filename: the name of the file to be loaded
         :filename type: str
         """
-        filename = f"results\\{foldername}\\{filename}.pkl"
+        filename = Path("results") / foldername / f"{filename}.pkl"
         if os.path.exists(filename):
             with open(filename, "rb") as file:
                 loaded_data = pickle.load(file)

@@ -177,9 +177,12 @@ class ForcastFactory:
 
         self._predicted_closing_prices = self._calculate_closing_prices()
     
-    def plot_predictions(self) -> None:
+    def plot_predictions(self, save_path: str | None = None) -> None:
         """
         Plots the predictions and the raw data.
+
+        :param save_path: If None, display plot, otherwise save graph at 
+        save_path
 
         :raise ValueError: if the predic method hasn't been used
         before trying to use this method
@@ -196,9 +199,9 @@ class ForcastFactory:
             self._predicted_residuals
             )
         
-        plotter.masterPlot(True, True, True)
+        plotter.masterPlot(True, True, True, save_path=save_path)
 
-    def plot_comparison(self) -> None:
+    def plot_comparison(self, save_path: str | None = None) -> None:
         """
         Plots the comparison between the predicted closing prices
         and the observed closing prices as well as the residuals.
@@ -219,7 +222,7 @@ class ForcastFactory:
             self._predicted_residuals
             )
         
-        plotter.masterPlot(True, True, True)
+        plotter.masterPlot(True, True, True, save_path=save_path)
         
 
     def _train_model(self) -> None:

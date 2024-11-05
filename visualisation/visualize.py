@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib.dates as mdates
 from pandas.core.series import Series
+from pathlib import Path
 
 
 class PlotStocks:
@@ -58,7 +59,8 @@ class PlotStocks:
             self,
             simpleMovingAverage = True,
             predictedClosingPrices = False,
-            predictedResiduals = False
+            predictedResiduals = False,
+            save_path = None
             ) -> None:
         """
         Creates a comprehensive plot displaying candlestick data, residuals, and optionally SMA and 
@@ -70,6 +72,9 @@ class PlotStocks:
         :type predictedClosingPrices: bool
         :param predictedResiduals: If True, includes predicted residuals in the plot.
         :type predictedResiduals: bool
+        :param save_path: If None, display plot, otherwise save graph at 
+        save_path
+        :type save_path: str, None
         """
         self.masterPlot_on = True
         _, (ax, ax1) = plt.subplots(2, 1, figsize=(8, 6), gridspec_kw={'height_ratios': [3, 1]})
@@ -83,8 +88,10 @@ class PlotStocks:
 
         # Adjust the spacing between subplots (increase hspace)
         plt.subplots_adjust(hspace=0.5)
-
-        plt.show()
+        if save_path:
+            plt.savefig(save_path)
+        else:
+            plt.plot()
         self.masterPlot_on = False
 
     def plot_candlestick(
@@ -160,7 +167,7 @@ class PlotStocks:
             ax.xaxis.set_major_locator(mdates.YearLocator())
             ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
         ax.set_title("Stock Data")
-        ax.set_ylabel('Price')
+        ax.set_ylabel('Price (USD)')
 
         ax.legend()
 

@@ -6,6 +6,7 @@ from data_parser.dataFactory import StockDataFactory, DataReader
 from forcast.forecastFactory_initializer import ForcastFactoryInitializer
 from forcast.forcastFactory import ForcastFactory
 from visualisation.visualize import PlotStocks
+from pathlib import Path
 
 
 def explore_different_architectures(
@@ -178,9 +179,9 @@ def forcast_closing_prices(
         raw_data_amount: int = 50,
         sma_lookback_period: int = 3,
         regression_window: int | None = None,
-        end_date: str = "2024-09-01",
+        end_date: str = "2024-10-01",
         interval: str = "1d",
-        architecture: list[int] = [13, 24],
+        architecture: list[int] = [16, 16],
         learning_rate: int = 0.01,
         loss_function: str = "mse",
         metrics: list[str] = ["mae"],
@@ -190,7 +191,8 @@ def forcast_closing_prices(
         num_sets: int = 50,
         labels_per_set: int = 1,
         testing_percentage: float = 0.8,
-        validation_percentage: float = 0.1
+        validation_percentage: float = 0.1,
+        save_path: str | None = None
         ) -> tuple[list[float], float]:
     """
     Forecasts closing prices for a specified stock using a neural network 
@@ -244,6 +246,9 @@ def forcast_closing_prices(
     :param validation_percentage: Percentage of data used for validation. 
         Default is 0.1.
     :type validation_percentage: float
+    :param save_path: If None, display plot, otherwise save graph at 
+    save_path
+    :type save_path: str, None
 
     :return: A tuple containing the list of predicted closing prices and 
         the Mean Squared Error (MSE) between predictions and actual values.
@@ -259,7 +264,7 @@ def forcast_closing_prices(
         loss_function,
         metrics,
         epochs,
-        batch_size
+        batch_size,
         )
     
     # Generate datafacotry parameters
@@ -289,13 +294,17 @@ def forcast_closing_prices(
         )
     
     # Plot the forcast and the raw data
-    forcaster.plot_predictions()
+    forcaster.plot_predictions(
+        save_path=(Path("results") / "forecasting" / "predictions.png")
+    )
 
     # Compare the predictions with observations
     mse = forcaster.compare_predictions_with_observations()
 
     # Plot the observed data and the predicted data.
-    forcaster.plot_comparison()
+    forcaster.plot_comparison(
+        save_path=(Path("results") / "forecasting" / "comparison.png")
+    )
 
     predicted_closing_prices = forcaster.predicted_closing_prices
 
@@ -363,4 +372,4 @@ def plot_data():
 
 
 if __name__ == "__main__":
-    pass
+    forcast_closing_prices(save_path=True)
