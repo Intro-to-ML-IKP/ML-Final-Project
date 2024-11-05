@@ -450,8 +450,8 @@ class ForcastFactory:
             raise ValueError(
                 "You can't perform a comparison as your"
                 " predictions extend passed the current date!\n"
-                f"Your are predicting up until: {str(end_date).\
-                                                split(" ")[0]}"
+                "Your are predicting up until: "
+                f"{str(end_date).split(' ')[0]}"
                 "Try reducing the number of predictions, or change"
                 " the end date to an earlier date!")
         
