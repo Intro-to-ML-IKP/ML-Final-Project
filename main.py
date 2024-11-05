@@ -353,14 +353,17 @@ def perform_statistical_analysis(filename: str, foldername: str) -> None:
     print_nice_title(top_5_networks)
     print(results.df[:5])
 
-def plot_data():
+def plot_data(
+        number_of_points: int = 10,  # Value used by final results.
+        number_of_sets: int = 50  # Dito.
+):
     raw_data = DataReader("AAPL").getData(
-        number_of_points=10,
-        number_of_sets=1000
+        number_of_points,
+        number_of_sets
     )
     plot_stocks = PlotStocks(raw_data)
     plot_stocks.plot_candlestick()
 
 
 if __name__ == "__main__":
-    pass
+    plot_data()

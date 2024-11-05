@@ -90,7 +90,8 @@ class PlotStocks:
     def plot_candlestick(
             self,
             simpleMovingAverage = False,
-            predictedClosingPrices = False) -> None:
+            predictedClosingPrices = False,
+            years_on_x_axis: bool = False) -> None:
         """
         Creates a candlestick plot with optional overlays of
         SMA and predicted closing prices.
@@ -107,7 +108,8 @@ class PlotStocks:
         self._plot_candlestick(
             ax,
             simpleMovingAverage,
-            predictedClosingPrices
+            predictedClosingPrices,
+            True
             )
 
         plt.show()
