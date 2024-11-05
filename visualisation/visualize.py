@@ -116,7 +116,8 @@ class PlotStocks:
             self,
             ax,
             simpleMovingAverage,
-            predictedClosingPrices
+            predictedClosingPrices,
+            years_on_x_axis: bool = False
             ) -> None:
         """
         Helper method to plot the candlestick data on a provided axis.
@@ -128,6 +129,8 @@ class PlotStocks:
         :param predictedClosingPrices: If True, includes predicted
         closing prices overlay.
         :type predictedClosingPrices: bool
+        :param years_on_x_axis: Put only the years on the x axis.
+        :type years_on_x_axis: bool
         """
         # Number of days
         num_data = len(self.high)
@@ -153,6 +156,9 @@ class PlotStocks:
             self._plot_predicted_closing_prices(ax)
 
         # Formatting
+        if years_on_x_axis:
+            ax.xaxis.set_major_locator(mdates.YearLocator())
+            ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
         ax.set_title("Stock Data")
         ax.set_ylabel('Price')
 

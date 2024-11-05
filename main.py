@@ -356,12 +356,11 @@ def perform_statistical_analysis(filename: str, foldername: str) -> None:
 def plot_data():
     raw_data = DataReader("AAPL").getData(
         number_of_points=10,
-        number_of_sets=50
+        number_of_sets=1000
     )
     plot_stocks = PlotStocks(raw_data)
     plot_stocks.plot_candlestick()
 
-    
 
 if __name__ == "__main__":
-    pass
+    plot_data()
