@@ -1,10 +1,10 @@
-from utils import print_nice_title
+from utils import print_nice_title # type: ignore
 from network.parameterConstructor import ParameterConstructor
 from network.network_constructor import NetworksConstructor, NetworksDict
 from results.result_handler import ResultsHandler
 from data_parser.dataFactory import StockDataFactory
-from forcast.forecastFactory_initializer import ForcastFactoryInitializer
-from forcast.forcastFactory import ForcastFactory
+from forcast.forecastFactory_initializer import ForcastFactoryInitializer # type: ignore
+from forcast.forcastFactory import ForcastFactory # type: ignore
 
 
 def explore_different_architectures(
@@ -354,4 +354,19 @@ def perform_statistical_analysis(filename: str, foldername: str) -> None:
 
 
 if __name__ == "__main__":
-    pass
+    explore_different_architectures(
+        stockCode="AAPL",
+        results_filename="Experiment_broad",
+        results_foldername="results",
+        maxLayers=2,
+        minNeurons=2,
+        maxNeurons=32,
+        dNeurons=8,
+        minLearningRate=0.0005,
+        maxLearningRate=10, 
+        dLearningRate=0.5,
+        minBatchSize=1,
+        maxBatchSize=50,
+        dBatchSize=7,
+    )
+
