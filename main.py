@@ -2,9 +2,10 @@ from utils import print_nice_title # type: ignore
 from network.parameterConstructor import ParameterConstructor
 from network.network_constructor import NetworksConstructor, NetworksDict
 from results.result_handler import ResultsHandler
-from data_parser.dataFactory import StockDataFactory
-from forcast.forecastFactory_initializer import ForcastFactoryInitializer # type: ignore
-from forcast.forcastFactory import ForcastFactory # type: ignore
+from data_parser.dataFactory import StockDataFactory, DataReader
+from forcast.forecastFactory_initializer import ForcastFactoryInitializer
+from forcast.forcastFactory import ForcastFactory
+from visualisation.visualize import PlotStocks
 
 
 def explore_different_architectures(
@@ -172,8 +173,8 @@ def explore_different_architectures(
     return sorted_results
 
 def forcast_closing_prices(
-        stock_name: str,
-        number_of_predictions: int,
+        stock_name: str = "AAPL",
+        number_of_predictions: int = 5,
         raw_data_amount: int = 50,
         sma_lookback_period: int = 3,
         regression_window: int | None = None,
@@ -352,21 +353,17 @@ def perform_statistical_analysis(filename: str, foldername: str) -> None:
     print_nice_title(top_5_networks)
     print(results.df[:5])
 
+def plot_data(
+        number_of_points: int = 10,  # Value used by final results.
+        number_of_sets: int = 50  # Dito.
+):
+    raw_data = DataReader("AAPL").getData(
+        number_of_points,
+        number_of_sets
+    )
+    plot_stocks = PlotStocks(raw_data)
+    plot_stocks.plot_candlestick()
+
 
 if __name__ == "__main__":
-    explore_different_architectures(
-        stockCode="AAPL",
-        results_filename="Experiment_broad",
-        results_foldername="results",
-        maxLayers=2,
-        minNeurons=2,
-        maxNeurons=32,
-        dNeurons=8,
-        minLearningRate=0.0005,
-        maxLearningRate=10, 
-        dLearningRate=0.5,
-        minBatchSize=1,
-        maxBatchSize=50,
-        dBatchSize=7,
-    )
-
+    plot_data()
