@@ -48,7 +48,8 @@ class StockDataFactory:
         self._data_processor: DataProcessor|None = None
         
     def get_stock_data(
-            self
+            self,
+            sma_data: bool = False
             ) -> tuple[
                 np.ndarray,
                 np.ndarray,
@@ -59,9 +60,17 @@ class StockDataFactory:
                 ]:
         """
         This method is used to get the required data for the training
-        of a Neural Network.
+        of a Neural Network that trains on the residuals or an LSTM (RNN)
+        that trains on the Simple Moving Average (SMA). It performs a TTV
+        split on the data utilising the `train_test_split` function of sklearn.
 
-        :return: Tuple containing:
+        :param sma_data: if set to False, the method returns the preprocessed
+        residual data. When set to True, the method returns the preprocessed
+        SMA data. Default is set to False (CAUTION: DO NOT CHANGE!).
+        :return: The preprocessed data for the training of the Neural Network
+        (predicting the residuals) or the preprocessed data for the training
+        of the LSTM (RNN) (prodicting the SMA).
+        Returns a Tuple containing:
         training data,
         validation data,
         test data,
@@ -81,11 +90,15 @@ class StockDataFactory:
         # Generate the sets 
         sets = self._generate_sets()
 
-        # Calculate the residuals
-        residuals = self._calculate_residuals(sets)
+        if sma_data:
+            # Preprocess the simple moving average
+            processed_data = self._preprocess_data(sets, sma_data)
+        else:
+            # Preprocess the residuals
+            processed_data = self._preprocess_data(sets, sma_data)
 
         # Generate labels from the data
-        data, labels = self._get_labeled_data(residuals)
+        data, labels = self._get_labeled_data(processed_data)
 
         # Apply a train, test, validation split on the data
         (
@@ -245,43 +258,50 @@ class StockDataFactory:
             self._points_per_set+2)
         return sets
     
-    def _calculate_residuals(
+    def _preprocess_data(
             self,
-            sets: list[list[float]]
+            sets: list[list[float]],
+            sma_data: bool,
             ) -> list[list[float]]:
         """
-        This method is used to calculate the residuals
+        This method is used to preproccess the data
         of the different sets.
 
         :param sets: a list of sets of stock data
         :type sets: list[list[float]]
-        :return: a list of residuals for said sets
+        :return: a list of preprocessed data
         :rtype: list[list[float]]
         """
-        residuals = []
+        data = []
         for set_ in sets:
             simple_moving_average = self._data_processor.calculate_SMA(set_)
-            residual = self._data_processor.calculate_residuals(
-                set_,
-                simple_moving_average
-                )
-            residuals.append(residual)
-        return residuals
+            if sma_data:
+                # Get data for the LSTM (i.e. SMA data)
+                data.append(simple_moving_average)
+            else:
+                # Get data for the NN (i.e. residual data)
+                residual = self._data_processor.calculate_residuals(
+                    set_,
+                    simple_moving_average
+                    )
+                data.append(residual)
+        return data
     
     def _get_labeled_data(
             self,
-            residuals: Any
+            processed_data: Any
             ) -> tuple[list[list[float]], list[list[float]]]:
         """
         Labels the data to prepare it for train, test, validation split
 
-        :param residuals: _description_
-        :type residuals: Any
-        :return: _description_
+        :param processed_data: the processed data to generate the labels
+        of
+        :type processed_data: Any
+        :return: a tuple with data and labels
         :rtype: tuple[list[list[float]], list[list[float]]]
         """
         data, labels = self._data_processor.generate_labels(
-            residuals,
+            processed_data,
             self._labels_per_set
             )
         return data, labels

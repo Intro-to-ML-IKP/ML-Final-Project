@@ -247,7 +247,7 @@ class NetworksConstructor:
             )
         
         # Perform exploration on each parameter combination
-        with Pool(processes=50) as p:
+        with Pool(processes=1) as p: # processes - how many NNs we train at a time
             p.map(explore_with_args, full_param_list)
 
 class NetworksDict:

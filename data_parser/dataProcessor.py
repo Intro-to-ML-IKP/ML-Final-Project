@@ -218,15 +218,15 @@ class DataProcessor:
     
     def generate_labels(
             self,
-            residuals_data: list[list[float]],
+            processed_data: list[list[float]],
             label_size: int = 5
             ) -> tuple[list[list[float]], list[list[float]]]:
         """
         Generates labels for a given data based on
         label size.
 
-        :param residuals_data: the data to generate labels on
-        :type residuals_data: list[list[float]]
+        :param processed_data: the data to generate labels on
+        :type processed_data: list[list[float]]
         :param label_size: the number of labels (size), defaults to 5
         :type label_size: int, optional
         :return: tuple of data and lebels to be used for test, train,
@@ -235,7 +235,7 @@ class DataProcessor:
         """
         allData = []
         allLabels = []
-        for set in residuals_data:
+        for set in processed_data:
             allData.append(set[:-label_size])
             allLabels.append(set[-label_size:])
         return allData, allLabels
