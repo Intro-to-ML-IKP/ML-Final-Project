@@ -1,5 +1,36 @@
 from data_parser.dataFactory import StockDataFactory
 
+#####################################################################################
+############################       TO DO LIST     ###################################
+#####################################################################################
+# 1. Normalise the data before training!!! (Crutial for training RNNs)
+#       Simple example:
+#               from sklearn.preprocessing import MinMaxScaler
+#
+#               scaler = MinMaxScaler(feature_range=(0, 1))
+#               dataset = scaler.fit_transform(dataset)
+# 2. Create and fit LSTM network.
+#       Simple example:
+#               from tensorflow.keras.models import Sequential
+#               from tensorflow.keras.layers import Dense
+#               from tensorflow.keras.layers import LSTM
+#
+#               model = Sequential()
+#               model.add(LSTM(4, input_shape=(1, 1)))
+#               model.add(Dense(1))
+#               model.compile(loss='mean_squared_error', optimizer='adam')
+#               model.fit(training_data, training_labels, epochs=100, batch_size=1, verbose=2)
+# 3. Evaluate the LSTM network against a given metric, like RMSE.
+#       Simple example:
+#               from sklearn.metrics import mean_squared_error
+#
+#               trainScore = np.sqrt(mean_squared_error(trainY[0], trainPredict[:,0]))
+#               print('Train Score: %.2f RMSE' % (trainScore))
+#               testScore = np.sqrt(mean_squared_error(testY[0], testPredict[:,0]))
+# 4. Repeat the previous 3 steps for different permutations of hyperparameter combination
+# for hyperparameter tunning.
+
+
 def get_training_data(
         stockCode: str = "AAPL",
         pointsPerSet: int = 10,
