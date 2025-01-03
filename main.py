@@ -164,13 +164,33 @@ def explore_different_architectures(
         )
     
     # Get the sorted results from the exploration as dictionary
-    sorted_results = NetworksDict()(netConst.results)
+    sorted_results = NetworksDict().sort_results_list(netConst.results)
 
     # Save the results
-    result_hanler = ResultsHandler(sorted_results)
-    result_hanler.save_results(results_filename, results_foldername)
+    result_handler = ResultsHandler(sorted_results, mae=False)
+    result_handler.save_results(
+        results_filename,
+        results_foldername
+        )
+    
+    result_handler.results = netConst.training_loss
+    result_handler.save_results(
+        f"{results_filename}_training_loss",
+        results_foldername
+        )
+    
+    result_handler.results = netConst.validation_loss
+    result_handler.save_results(
+        f"{results_filename}_validation_loss",
+        results_foldername
+        )
 
-    return sorted_results
+
+    # Save the results
+    # result_hanler = ResultsHandler(sorted_results, mae=False)
+    # result_hanler.save_results(results_filename, results_foldername)
+
+    # return sorted_results
 
 def forcast_closing_prices(
         stock_name: str = "AAPL",
@@ -317,6 +337,7 @@ def perform_statistical_analysis(filename: str, foldername: str) -> None:
     # Load the results
     results = ResultsHandler()
     results.load_results(filename, foldername)
+    print(len(results.results))
 
     # Define the title
     corr_coef_title = "Correlation Coefficients"
@@ -364,6 +385,50 @@ def plot_data(
     plot_stocks = PlotStocks(raw_data)
     plot_stocks.plot_candlestick()
 
+def plot_train_val_losses():
+    import os
+    import pickle
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    filename = "results\\test\\tests_again_1_train"
+    if os.path.exists(filename):
+        with open(filename, "rb") as file:
+            loaded_data = pickle.load(file)
+   
+    filename = "results\\test\\tests_again_1_val"
+    if os.path.exists(filename):
+        with open(filename, "rb") as file:
+            loaded_data2 = pickle.load(file)
+
+    avg_train_loss = np.mean(loaded_data, axis=0)
+    avg_val_loss = np.mean(loaded_data2, axis=0)
+
+    # Compute the standard deviation (variance) for each epoch
+    std_train_loss = np.std(loaded_data, axis=0)
+    std_val_loss = np.std(loaded_data2, axis=0)
+
+    # Plotting the average loss with variance (shaded area)
+    epochs = range(1, len(avg_train_loss) + 1)
+
+    plt.figure(figsize=(10, 6))
+
+    # Plot the average training and validation loss
+    plt.plot(epochs, avg_train_loss, label='Average Training Loss', color='blue')
+    plt.plot(epochs, avg_val_loss, label='Average Validation Loss', color='red')
+
+    # Add shaded areas for the variance (standard deviation)
+    plt.fill_between(epochs, avg_train_loss - std_train_loss, avg_train_loss + std_train_loss, color='blue', alpha=0.2)
+    plt.fill_between(epochs, avg_val_loss - std_val_loss, avg_val_loss + std_val_loss, color='red', alpha=0.2)
+
+    # Labels and title
+    plt.title('Average Training and Validation Loss with Variance')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+
+    # Show the plot
+    plt.show()
 
 if __name__ == "__main__":
-    ...
+    explore_different_architectures("AAPL", "ffnn_results", "ml", maxEpochs=200)

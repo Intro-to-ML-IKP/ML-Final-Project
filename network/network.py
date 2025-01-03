@@ -108,17 +108,22 @@ class Model:
         self._model_validator()
 
         # Stops training when validation performance stops improving
-        early_stopping = EarlyStopping(monitor='val_loss', patience=4)
+        #early_stopping = EarlyStopping(monitor="val_loss", patience=4)
         
-        self.model.fit(
+        history = self.model.fit(
             training_data,
             training_labels,
             epochs=epochs,
             batch_size=batch_size,
             validation_data=(validation_data, validation_labels), 
-            callbacks=[early_stopping],
+            #callbacks=[early_stopping],
             verbose=0
         )
+
+        training_loss = history.history["loss"]        # Training loss per epoch
+        validation_loss = history.history["val_loss"]  # Validation loss per epoch
+
+        return training_loss, validation_loss
 
     def predict(
             self,
