@@ -1,31 +1,52 @@
-# NeuralNetwork_project
+# Intro to ML - Assignment 3 Proposal
 
-Plan: 
-build a feedforward network on stock data of the last n candlesticks
-Input = n candlestick with high,low,open,close = 4n input neurons
-Output is next k prices = next k closing values
-Analyze the trend in post processing
+**Authors:**
+- Iva I. Ivanova (s5614260)
+- Katya T. Toncheva (s5460786)
+- Petar I. Penchev (s4683099)
 
-Proposal 2:
-Feedforward network on stock data of the last n candlesticks
-Predict the next high,low,open,close of the subsequent candlestick
-Use the prediction as the input for the next prediction -> make k predictions
-Analyze the trend -> profit
+**Date:** December 25, 2024
 
-Proposal 3:
-Interpolation of the training data via later determined method
-Subtract interpolation from real training data = residual
-Train model on residual to predict next step
-Iteratively predict next k steps this way by shifting window -> k residual predictions
-Extrapolate trend and add predicted residual
-Post process for buy/sell -> get some numerical measure of quality of the network i.e. cost
-Generate a matrix for hyperparameters i.e. learning rate
-Train the model on a set of markets(1 market==1 stock) with different hyperparameters
-Analyze which hyperparamer sets perform best
-Get rich quick
+## Goal
 
+The goal of this project is to develop an ensemble model comprised of a feedforward neural network (FFNN) and a long short-term memory (LSTM) recurrent neural network (RNN) tasked with predicting closing prices of a stock.
 
-Objectives:
-Find training parameters i.e. learning rate/weight initialization/loss func to find the best local minimum
-Find ways to preprocess input data to optimize performance
-Find a network architecture that maximizes performance without overfitting/extreme complexity
+## Project Description
+
+The FFNN is designed to predict the residuals between the closing prices and the trendline, represented by the simple moving average (SMA), which is also referred to as the running average. Meanwhile, the LSTM is responsible for extrapolating the SMA. By combining these two components, the model aims to forecast closing prices more effectively. This work is inspired by and builds on a previous project.
+
+## Materials
+
+### Dataset
+
+The data used for training both machine learning models is sourced from the Yahoo API. It is accessed through the library `yfinance` (v. 0.2.44). The data used is referred to as a "candlestick", a tuple containing ("date", "open price", "highest price", "lowest price", "close price").
+
+### Preprocessing the data for the FFNN
+
+In training the FFNN, what we care about are the residuals. The residuals are the difference between the closing prices and the trend of the stock data. This trend is computed using a simple moving average through the closing prices:
+
+\[
+\text{SMA(date)} = \frac{1}{N} \sum^N_{n=1} \text{Closing Price(date-N)}
+\]
+
+Where $\text{Closing Price(date-N)}$ is the closing price at a particular past date, $N$ is the number of units of "lookback" time we are interested in, and SMA(date) is the simple moving average. Thus, the residuals are defined as:
+
+\[
+\text{Residual(date)} = \text{Closing Price(date)} - \text{SMA(date)}
+\]
+
+Where $\text{Closing Price(date)}$ is the closing price, $\text{SMA(date)}$ is the simple moving average, and $\text{Residual(date)}$ is the residual at a particular date.
+
+### Preprocessing the data for the LSTM
+
+In training the LSTM, what we are trying to predict is the trend. This trend is computed using the simple moving average through the closing prices (refer to the equation above). Then, the data is normalized to help make the inputs more balanced and reduce the impact of any outliers in the data. One can refer to the figure below for an example of the data that is going to be used in training these models.
+
+### Model
+
+We will restrict ourselves to a smaller-sized FFNN in accordance with previous findings, specifically a maximum of 2 layers and a neuron size no bigger than 16 per hidden layer.
+
+Regarding the LSTM, we still have not decided on an exact architecture.
+
+### Metrics
+
+We will definitely look at the Mean Absolute Error (MAE) as one of the metrics, but we might implement more than one.
