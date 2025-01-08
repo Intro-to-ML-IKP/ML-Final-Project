@@ -114,7 +114,7 @@ def explore_different_architectures(
     pConst.calcParamList()
 
     # Get the parameter list
-    paramList = pConst.getParamList()
+    paramList = pConst.getParamList()[:10]
 
     if save_param_list:
         with open("paramsList.txt", "w") as f:
@@ -172,13 +172,13 @@ def explore_different_architectures(
         results_filename,
         results_foldername
         )
-    
+
     result_handler.results = netConst.training_loss
     result_handler.save_results(
         f"{results_filename}_training_loss",
         results_foldername
         )
-    
+
     result_handler.results = netConst.validation_loss
     result_handler.save_results(
         f"{results_filename}_validation_loss",
@@ -391,12 +391,14 @@ def plot_train_val_losses():
     import matplotlib.pyplot as plt
     import numpy as np
 
-    filename = "results\\test\\tests_again_1_train"
+    filename = "results\\ml\\ffnn_results_training_loss"
     if os.path.exists(filename):
         with open(filename, "rb") as file:
             loaded_data = pickle.load(file)
+
+    print(len(loaded_data))
    
-    filename = "results\\test\\tests_again_1_val"
+    filename = "results\\ml\\ffnn_results_validation_loss"
     if os.path.exists(filename):
         with open(filename, "rb") as file:
             loaded_data2 = pickle.load(file)
@@ -432,3 +434,4 @@ def plot_train_val_losses():
 
 if __name__ == "__main__":
     explore_different_architectures("AAPL", "ffnn_results", "ml", maxEpochs=200)
+    
