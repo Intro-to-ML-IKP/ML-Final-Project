@@ -2,7 +2,8 @@ import numpy as np
 from typing import Any
 from tensorflow import keras
 from tensorflow.keras.models import Sequential # type: ignore
-from tensorflow.keras.layers import Dense,Input # type: ignore
+from tensorflow.keras.layers import Dense,Input,BatchNormalization # type: ignore
+from tensorflow.keras.regularizers import l2 # type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
 from tensorflow.keras.callbacks import EarlyStopping # type: ignore
 from sklearn.metrics import mean_absolute_error
@@ -45,10 +46,10 @@ class Model:
 
         # Add all layers, including hidden layers and the output layer
         for number_of_neurons, activation in zip(model_shape, activations[:-1]):
-            model.add(Dense(number_of_neurons, activation=activation))
+            model.add(Dense(number_of_neurons, activation=activation, kernel_regularizer=l2(0.01)), BatchNormalization())
 
         # Add the output layer
-        model.add(Dense(output_size, activation=activations[-1]))
+        model.add(Dense(output_size, activation=activations[-1], kernel_regularizer=l2(0.01)), BatchNormalization())
 
         self.model = model
 
