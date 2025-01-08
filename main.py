@@ -3,8 +3,8 @@ from network.parameterConstructor import ParameterConstructor
 from network.network_constructor import NetworksConstructor, NetworksDict
 from results.result_handler import ResultsHandler
 from data_parser.dataFactory import StockDataFactory, DataReader
-from forcast.forecastFactory_initializer import ForcastFactoryInitializer
-from forcast.forcastFactory import ForcastFactory
+from forecast.forecastFactory_initializer import ForcastFactoryInitializer
+from forecast.forcastFactory import ForcastFactory
 from visualisation.visualize import PlotStocks
 
 
@@ -269,7 +269,7 @@ def forcast_closing_prices(
         the Mean Squared Error (MSE) between predictions and actual values.
     :rtype: tuple[list[float], float]
     """
-    # Create a forcast factory initializer
+    # Create a forecast factory initializer
     param_getter = ForcastFactoryInitializer()
 
     # Generate model parameters
@@ -291,14 +291,14 @@ def forcast_closing_prices(
         validation_percentage
         )
 
-    # Create a forcast factory
+    # Create a forecast factory
     forcaster = ForcastFactory(
         stock_name,
         model_parameters,
         datafactory_parameters
         )
 
-    # Make the forcast
+    # Make the forecast
     forcaster.predict(
         number_of_predictions,
         raw_data_amount,
@@ -308,7 +308,7 @@ def forcast_closing_prices(
         interval
         )
     
-    # Plot the forcast and the raw data
+    # Plot the forecast and the raw data
     forcaster.plot_predictions()
 
     # Compare the predictions with observations
