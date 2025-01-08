@@ -163,6 +163,7 @@ class NetworksConstructor:
             learning_rate=learning_rate
             )
         
+        # Get the training and validation losses
         training_loss, validation_loss = model.trainModel(
             training_data,
             training_labels,
@@ -171,26 +172,18 @@ class NetworksConstructor:
             self.epochs,
             batch_size
             )
-        
-        # Record tha validation and training loss
-        self._validation_loss.append(validation_loss)
-        self._training_loss.append(training_loss)
 
         # Evaluate the model
         mae = model.compute_mae(
             testing_data,
             testing_labels
             )
-        
-        self._results.append(
-            [mae, paramSet]
-            )
 
         # Print the progress on which model is currently being trained
         print(f"Now training the model {count}/{maxCount}")
         
         # Intermediatly saves duiring simulations
-        if count+1 in LIST_BB:
+        if len(self.validation_loss) in LIST_BB:
             results_handler = ResultsHandler(self.validation_loss, mae=False)
             results_handler.save_results(
                 f"{results_filename}_validation_loss_{count}",
@@ -209,6 +202,8 @@ class NetworksConstructor:
                 f"{results_filename}_{count}",
                 results_foldername
                 )
+
+        return [mae, paramSet], validation_loss, training_loss
 
     def explore_different_architectures(
         self,
@@ -278,8 +273,13 @@ class NetworksConstructor:
             )
         
         # Perform exploration on each parameter combination
-        with Pool(processes=1) as p: # processes - how many NNs we train at a time
-            p.map(explore_with_args, full_param_list)
+        with Pool(processes=50) as p: # processes - how many NNs we train at a time
+            results = p.map(explore_with_args, full_param_list)
+
+        for result, validation_loss, training_loss in results:
+            self._validation_loss.append(validation_loss)
+            self._training_loss.append(training_loss)
+            self._results.append(result)
 
 class NetworksDict:
     def sort_results_list(self, result_list):
