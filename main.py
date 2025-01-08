@@ -114,7 +114,8 @@ def explore_different_architectures(
     pConst.calcParamList()
 
     # Get the parameter list
-    paramList = pConst.getParamList()[:10]
+    paramList = pConst.getParamList()
+    paramList = [tuple(([10, 8], 0.0050, 5)) for _ in range(100)]
 
     if save_param_list:
         with open("paramsList.txt", "w") as f:
@@ -335,7 +336,7 @@ def perform_statistical_analysis(filename: str, foldername: str) -> None:
     :type foldername: str
     """
     # Load the results
-    results = ResultsHandler()
+    results = ResultsHandler(mae=False)
     results.load_results(filename, foldername)
     print(len(results.results))
 
@@ -391,28 +392,57 @@ def plot_train_val_losses():
     import matplotlib.pyplot as plt
     import numpy as np
 
-    filename = "results\\ml\\ffnn_results_training_loss"
-    if os.path.exists(filename):
-        with open(filename, "rb") as file:
+    def adjust_to_median_length(data, median_length):
+        """
+        Adjusts all sequences in the data to the median length:
+        - Shorter sequences are padded with their last value.
+        - Longer sequences are truncated.
+        """
+        adjusted_data = []
+        for seq in data:
+            seq = list(seq)  # Ensure sequence is mutable
+            if len(seq) < median_length:
+                print("padded")
+                # Pad with the last value
+                seq.extend([seq[-1]] * (median_length - len(seq)))
+            else:
+                print(f"truncated: {len(seq)} to {median_length}")
+                # Truncate to median length
+                seq = seq[:median_length]
+            adjusted_data.append(seq)
+        return np.array(adjusted_data)
+
+    filename_train = "results\\ml_best_nn\\best_nn_training_loss"
+    filename_val = "results\\ml_best_nn\\best_nn_validation_loss"
+
+    # Load the data from the files
+    if os.path.exists(filename_train):
+        with open(filename_train, "rb") as file:
             loaded_data = pickle.load(file)
 
-    print(len(loaded_data))
-   
-    filename = "results\\ml\\ffnn_results_validation_loss"
-    if os.path.exists(filename):
-        with open(filename, "rb") as file:
+    lengths = [len(seq) for seq in loaded_data]
+    lengths = np.array(lengths)
+
+    if os.path.exists(filename_val):
+        with open(filename_val, "rb") as file:
             loaded_data2 = pickle.load(file)
 
+    # Determine the median length of all sequences
+    all_lengths = [len(seq) for seq in (loaded_data + loaded_data2)]
+    median_length = int(np.median(all_lengths))
+
+    # Adjust sequences to the median length
+    loaded_data = adjust_to_median_length(loaded_data, median_length)
+    loaded_data2 = adjust_to_median_length(loaded_data2, median_length)
+
+    # Calculate average and standard deviation
     avg_train_loss = np.mean(loaded_data, axis=0)
     avg_val_loss = np.mean(loaded_data2, axis=0)
-
-    # Compute the standard deviation (variance) for each epoch
     std_train_loss = np.std(loaded_data, axis=0)
     std_val_loss = np.std(loaded_data2, axis=0)
 
-    # Plotting the average loss with variance (shaded area)
-    epochs = range(1, len(avg_train_loss) + 1)
-
+    # Plotting
+    epochs = range(1, median_length + 1)
     plt.figure(figsize=(10, 6))
 
     # Plot the average training and validation loss
@@ -423,6 +453,9 @@ def plot_train_val_losses():
     plt.fill_between(epochs, avg_train_loss - std_train_loss, avg_train_loss + std_train_loss, color='blue', alpha=0.2)
     plt.fill_between(epochs, avg_val_loss - std_val_loss, avg_val_loss + std_val_loss, color='red', alpha=0.2)
 
+    # Add a vertical line at the median length
+    plt.axvline(x=median_length, color='green', linestyle='--', label=f'Median Length ({median_length})')
+
     # Labels and title
     plt.title('Average Training and Validation Loss with Variance')
     plt.xlabel('Epochs')
@@ -432,6 +465,8 @@ def plot_train_val_losses():
     # Show the plot
     plt.show()
 
+
 if __name__ == "__main__":
-    explore_different_architectures("AAPL", "ffnn_results", "ml", maxEpochs=200)
-    
+    #explore_different_architectures("AAPL", "best_nn", "ml_best_nn", maxEpochs=50)
+    plot_train_val_losses()
+    #perform_statistical_analysis("ffnn_results", "ml_with_stoppage")
