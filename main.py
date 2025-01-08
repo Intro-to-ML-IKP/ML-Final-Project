@@ -386,7 +386,7 @@ def plot_data(
     plot_stocks = PlotStocks(raw_data)
     plot_stocks.plot_candlestick()
 
-def plot_train_val_losses():
+def plot_train_val_losses(filename: str, folder: str):
     import os
     import pickle
     import matplotlib.pyplot as plt
@@ -412,34 +412,47 @@ def plot_train_val_losses():
             adjusted_data.append(seq)
         return np.array(adjusted_data)
 
-    filename_train = "results\\ml_best_nn\\best_nn_training_loss"
-    filename_val = "results\\ml_best_nn\\best_nn_validation_loss"
+    filename_train = f"results\\{folder}\\{filename}_training_loss"
+    filename_val = f"results\\{folder}\\{filename}_validation_loss"
 
     # Load the data from the files
     if os.path.exists(filename_train):
         with open(filename_train, "rb") as file:
-            loaded_data = pickle.load(file)
-
-    lengths = [len(seq) for seq in loaded_data]
-    lengths = np.array(lengths)
+            training_loss_data = pickle.load(file)
 
     if os.path.exists(filename_val):
         with open(filename_val, "rb") as file:
-            loaded_data2 = pickle.load(file)
+            validation_loss_data = pickle.load(file)
 
     # Determine the median length of all sequences
-    all_lengths = [len(seq) for seq in (loaded_data + loaded_data2)]
+    all_lengths = [len(seq) for seq in (training_loss_data + validation_loss_data)]
     median_length = int(np.median(all_lengths))
 
+    biggest_sigma = 0
+    biggest_sigma_index = 0
+    for index, dat in enumerate(validation_loss_data):
+        dat_std = np.array(dat).std()
+        if dat_std > biggest_sigma:
+            biggest_sigma = dat_std
+            biggest_sigma_index = index
+
+    biggests_sigma_val_loss = validation_loss_data[biggest_sigma_index]
+    biggests_sigma_train_loss = training_loss_data[biggest_sigma_index]
+
+    for index in range(len(validation_loss_data)):
+        plt.plot(validation_loss_data[index], label='Validation Loss', color='red')
+        plt.plot(training_loss_data[index], label="Trainign Loss", color="blue")
+    plt.show()
     # Adjust sequences to the median length
-    loaded_data = adjust_to_median_length(loaded_data, median_length)
-    loaded_data2 = adjust_to_median_length(loaded_data2, median_length)
+    training_loss_data = adjust_to_median_length(training_loss_data, median_length)
+    validation_loss_data = adjust_to_median_length(validation_loss_data, median_length)
+
 
     # Calculate average and standard deviation
-    avg_train_loss = np.mean(loaded_data, axis=0)
-    avg_val_loss = np.mean(loaded_data2, axis=0)
-    std_train_loss = np.std(loaded_data, axis=0)
-    std_val_loss = np.std(loaded_data2, axis=0)
+    avg_train_loss = np.mean(training_loss_data, axis=0)
+    avg_val_loss = np.mean(validation_loss_data, axis=0)
+    std_train_loss = np.std(training_loss_data, axis=0)
+    std_val_loss = np.std(validation_loss_data, axis=0)
 
     # Plotting
     epochs = range(1, median_length + 1)
@@ -448,6 +461,9 @@ def plot_train_val_losses():
     # Plot the average training and validation loss
     plt.plot(epochs, avg_train_loss, label='Average Training Loss', color='blue')
     plt.plot(epochs, avg_val_loss, label='Average Validation Loss', color='red')
+
+    plt.plot(biggests_sigma_train_loss, label="Best performance training loss", color="green")
+    plt.plot(biggests_sigma_val_loss, label="Best performance validation loss", color="yellow")
 
     # Add shaded areas for the variance (standard deviation)
     plt.fill_between(epochs, avg_train_loss - std_train_loss, avg_train_loss + std_train_loss, color='blue', alpha=0.2)
@@ -467,6 +483,6 @@ def plot_train_val_losses():
 
 
 if __name__ == "__main__":
-    #explore_different_architectures("AAPL", "best_nn", "ml_best_nn", maxEpochs=50)
-    plot_train_val_losses()
+    #explore_different_architectures("AAPL", "best_nn", "ml_best_nn_l2_reg_batch_normalization", maxEpochs=50)
+    plot_train_val_losses("best_nn", "ml_best_nn_l2_reg_batch_normalization")
     #perform_statistical_analysis("ffnn_results", "ml_with_stoppage")
