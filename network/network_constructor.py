@@ -1,10 +1,11 @@
-from network.network import Model
-from results.result_handler import ResultsHandler
 from multiprocessing import Pool
 from typing import Tuple
 import tensorflow as tf
 from functools import partial
+from copy import deepcopy
 
+from network.network import Model
+from results.result_handler import ResultsHandler
 
 # Disable progress bars
 tf.keras.utils.disable_interactive_logging()
@@ -50,10 +51,24 @@ class NetworksConstructor:
         :param epochs: Maximum number of epochs for training.
         :type epochs: int
         """
-        self.results = []
+        self._results = []
+        self._training_loss = []
+        self._validation_loss = []
         self.input_size = input_size
         self.output_size = output_size
         self.epochs = epochs
+
+    @property
+    def training_loss(self):
+        return deepcopy(self._training_loss)
+    
+    @property
+    def validation_loss(self):
+        return deepcopy(self._validation_loss)
+
+    @property
+    def results(self):
+        return deepcopy(self._results)
     
     def _build_model(
             self,
@@ -148,7 +163,7 @@ class NetworksConstructor:
             learning_rate=learning_rate
             )
         
-        model.trainModel(
+        training_loss, validation_loss = model.trainModel(
             training_data,
             training_labels,
             validation_data,
@@ -156,6 +171,10 @@ class NetworksConstructor:
             self.epochs,
             batch_size
             )
+        
+        # Record tha validation and training loss
+        self._validation_loss.append(validation_loss)
+        self._training_loss.append(training_loss)
 
         # Evaluate the model
         mae = model.compute_mae(
@@ -163,7 +182,7 @@ class NetworksConstructor:
             testing_labels
             )
         
-        self.results.append(
+        self._results.append(
             [mae, paramSet]
             )
 
@@ -171,9 +190,21 @@ class NetworksConstructor:
         print(f"Now training the model {count}/{maxCount}")
         
         # Intermediatly saves duiring simulations
-        if count in LIST_BB:
-            maes = NetworksDict()(self.results)
-            results_handler = ResultsHandler(maes)
+        if count+1 in LIST_BB:
+            results_handler = ResultsHandler(self.validation_loss, mae=False)
+            results_handler.save_results(
+                f"{results_filename}_validation_loss_{count}",
+                results_foldername
+                )
+            
+            results_handler.results = self.training_loss
+            results_handler.save_results(
+                f"{results_filename}_training_loss_{count}",
+                results_foldername
+                )
+            
+            maes = NetworksDict().sort_results_list(self.results)
+            results_handler.results = maes
             results_handler.save_results(
                 f"{results_filename}_{count}",
                 results_foldername
@@ -251,40 +282,11 @@ class NetworksConstructor:
             p.map(explore_with_args, full_param_list)
 
 class NetworksDict:
-    """
-    This metaclass is resposible for accessing the
-    NetworksConstructor's attribute results, convert the list
-    to a dictionarry and orders it. It also prints a nice
-    human readable overview of the parameters of the Networks.
-    This class is intended to work only with the NetworksConstructor's
-    attribute 'self.results'. The way it should be used is:
-    
-    maes = NetworksDict()(self.results)
-
-    This would ensure that maes is a sorted dictionary of the results
-    from the exploration of the hyperparameter space.
-
-    :call: Prints a human readable sorted NNs with their parameters.
-    :return: A sorted dictionary of the results parameter in the class
-    NetworksConstructor.
-    """
-    @classmethod
-    def __call__(cls, result_list: list[list[float]]) -> dict:
-        """
-        Allows the class to be called like a function.
-        """
-        sorted_results = cls._sort_results(result_list)
-        for mae, params in sorted_results.items():
-            print(
-                f"MAE: {mae},"
-                f" Hidden Layers: {params[0]};"
-                f" Learning Rate: {params[1]};"
-                f" Batch Size: {params[2]}"
-                )
+    def sort_results_list(self, result_list):
+        sorted_results = self._sort_results(result_list)
         return sorted_results
     
-    @classmethod
-    def _list_to_dict(cls, result_list: list[list[float]]) -> dict:
+    def _list_to_dict(self, result_list: list[list[float]]) -> dict:
         """
         Gets the NetworksConstructor's results and makes
         them into a dictionary.
@@ -302,15 +304,14 @@ class NetworksDict:
             nnDict[mae] = params  # Store params associated with each MAE
         return nnDict
 
-    @classmethod
-    def _sort_results(cls, result_list: list[list[float]]) -> dict:
+    def _sort_results(self, result_list: list[list[float]]) -> dict:
         """
         Sort the results by the mae (smallest to largest)
 
         :return: a sorted dict
         :type return: dict
         """
-        nnDict = cls._list_to_dict(result_list)
+        nnDict = self._list_to_dict(result_list)
         sorted_keys = sorted(nnDict.keys())
         sorted_results = {key: nnDict[key] for key in sorted_keys}
         return sorted_results

@@ -8,26 +8,31 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from scipy.stats import pearsonr
 import numpy as np
+from copy import deepcopy
 
 
 class ResultsHandler:
     """
     This class is used to handle saving and loading of results.
     """
-    def __init__(self, results: dict = None) -> None:
+    def __init__(self, results: dict|list[list[float]]|None = None, mae: bool = True) -> None:
         self._results = results
-        if results is not None:
+        if mae:
             self._df = self._generate_pd_dataframe()
 
     @property
-    def results(self) -> dict:
+    def results(self) -> dict|list[float]:
         """
         Used to retrieve the results.
 
         :return: the results for the different networks
         :rtype: dict
         """
-        return self._results
+        return deepcopy(self._results)
+    
+    @results.setter
+    def results(self, results) -> None:
+        self._results = results
     
     @property
     def df(self) -> pd.DataFrame:
@@ -62,18 +67,8 @@ class ResultsHandler:
         # Define the complete filename with path
         full_filename = os.path.join(base_dir, filename)
 
-        if self._results is not None:
-            if os.path.exists(full_filename):
-                self._options_if_file_exists(full_filename)
-            else:
-                with open(full_filename, "wb") as file:
-                    pickle.dump(self._results, file)
-                print(f"Results saved successfully in dir `{full_filename}.pkl`.")
-        else:
-            print(
-                "There aren't any results to save."
-                "The saving was unsuccessful."
-                )
+        with open(full_filename, "wb") as file:
+            pickle.dump(self.results, file)
             
     def save_results_readable(
             self,
@@ -112,7 +107,7 @@ class ResultsHandler:
         :param filename: the name of the file to be loaded
         :filename type: str
         """
-        filename = f"results\\{foldername}\\{filename}.pkl"
+        filename = f"results\\{foldername}\\{filename}"
         if os.path.exists(filename):
             with open(filename, "rb") as file:
                 loaded_data = pickle.load(file)
