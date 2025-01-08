@@ -3,7 +3,7 @@ from data_parser.dataFactory import StockDataFactory
 #####################################################################################
 ############################       TO DO LIST     ###################################
 #####################################################################################
-# 1. Normalise the data before training!!! (Crutial for training RNNs)
+# 1. Normalise the data before training!!! (Crucial for training RNNs)
 #       Simple example:
 #               from sklearn.preprocessing import MinMaxScaler
 #
@@ -38,7 +38,7 @@ def get_training_data(
         labelsPerSet: int = 1,
         testingPercentage: float = 0.8,
         validationPercentage: float = 0.1,
-    ) -> dict:
+    ) -> tuple:
     """
     Generates and retrieves training, validation, and testing
     datasets along with their corresponding labels that are used for

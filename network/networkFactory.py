@@ -5,7 +5,7 @@ from network.network import Model
 
 class NetworkFactory:
     """
-    Serves as an way of creating a Neural Network model, that can be trained
+    Serves as a way of creating a Neural Network model, that can be trained
     to predict.
     """
     def __init__(
