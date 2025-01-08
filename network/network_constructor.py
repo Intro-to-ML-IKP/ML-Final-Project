@@ -273,7 +273,7 @@ class NetworksConstructor:
             )
         
         # Perform exploration on each parameter combination
-        with Pool(processes=50) as p: # processes - how many NNs we train at a time
+        with Pool(processes=5) as p: # processes - how many NNs we train at a time
             results = p.map(explore_with_args, full_param_list)
 
         for result, validation_loss, training_loss in results:
