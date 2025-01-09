@@ -28,7 +28,7 @@ from network.network import Model
 ## method plotting metrics -> RMSE
 
 
-class TrendModel(Model):
+class LstmModel(Model):
     """
     The base class for all models.
     """
