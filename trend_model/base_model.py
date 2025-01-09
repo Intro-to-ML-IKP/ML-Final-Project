@@ -30,13 +30,12 @@ class Model:
     """
     _model = None
 
-    def create_ARIMA_model(self, p, d, q, series):
-        self._model = ARIMA(series, p, d, q)
+    '''def create_ARIMA_model(self, p, d, q, series):
+        self._model = ARIMA(series, p, d, q)'''
 
     def create_sequential_model(
             self,
-            neurons: int,
-            batch_size,
+            lstm_neurons: int,
             model_shape: list[float],
             activations: list[str],
             input_shape: int,
@@ -59,27 +58,21 @@ class Model:
 
         # Define the input layer
         #model.add(Input(shape=(input_shape,)))
-        model.add(LSTM(neurons, batch_input_shape=(batch_size, X.shape[1], X.shape[2]), stateful=True))
-        model.add(Dense(1))
-        model.compile(loss='mean_squared_error', optimizer='adam')
+        model.add(LSTM(lstm_neurons, batch_input_shape=input_shape, stateful=True))
 
         # Add all layers, including hidden layers and the output layer
         for number_of_neurons, activation in zip(model_shape, activations[:-1]):
             model.add(Dense(number_of_neurons, activation=activation, kernel_regularizer=l2(0.01)),
                       BatchNormalization())
 
+        model.compile(loss='mean_squared_error', optimizer='adam')
+
+
         # Add the output layer
         model.add(Dense(output_size, activation=activations[-1], kernel_regularizer=l2(0.01)), BatchNormalization())
 
-        self.model = model
+        self._model = model
 
 
-    @abstractmethod
-    def fit(self, train_X: np.ndarray, train_y: np.ndarray) -> None:
-        """
-        The abstract method that fits the training data to the model.
-        :param train_X: np.ndarray training observations data
-        :param train_y: np.ndarray training ground truth data
-        :return: None
-        """
-        return None
+    def compile_lstm(self, ):
+        self._model.compile(loss='mean_squared_error', optimizer='adam')
