@@ -8,6 +8,9 @@ from matplotlib import pyplot
 from tensorflow.python.keras import Input
 from tensorflow.python.keras.layers import Dense
 from tensorflow.python.keras.regularizers import l2
+from typing_extensions import override
+
+from network.network import Model
 
 
 # TO DO:
@@ -25,7 +28,7 @@ from tensorflow.python.keras.regularizers import l2
 ## method plotting metrics -> RMSE
 
 
-class Model:
+class TrendModel(Model):
     """
     The base class for all models.
     """
@@ -34,6 +37,7 @@ class Model:
     '''def create_ARIMA_model(self, p, d, q, series):
         self._model = ARIMA(series, p, d, q)'''
 
+    @override
     def create_sequential_model(
             self,
             lstm_neurons: int,
@@ -75,33 +79,5 @@ class Model:
         self._model = model
 
 
-    def compile_lstm(self,
-            learning_rate: float,
-            lossFunc: str,
-            metrics: list[str]
-            ) -> None:
-        """
-        Compiles the model to prepare it for training.
 
-        :param learning_rate: The step size used for training.
-        :type learning_rate: float
-        :param lossFunc: The function used to calculate the training loss.
-        :type lossFunc: str
-        :param metrics: A list of metrics to track during training.
-        :type metrics: list[str]
-        """
-        self._model_validate()
-        self._model.compile(
-            optimizer=Adam(learning_rate=learning_rate),
-            loss=lossFunc,
-            metrics=metrics
-        )
-
-
-    def _model_validator(self)  -> None:
-        """
-        Validates if there is a model instantiated.
-        """
-        if self.model is None:
-            raise AttributeError("There is no Model!")
 
