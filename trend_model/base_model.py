@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABC
 import numpy as np
 from keras.src.layers import BatchNormalization, LSTM
+from keras.src.optimizers import Adam
 from tensorflow.keras.models import Sequential
 #from statsmodels.tsa.arima.model import ARIMA
 from matplotlib import pyplot
@@ -74,5 +75,25 @@ class Model:
         self._model = model
 
 
-    def compile_lstm(self, ):
-        self._model.compile(loss='mean_squared_error', optimizer='adam')
+    def compile_lstm(self,
+            learning_rate: float,
+            lossFunc: str,
+            metrics: list[str]
+            ) -> None:
+        """
+        Compiles the model to prepare it for training.
+
+        :param learning_rate: The step size used for training.
+        :type learning_rate: float
+        :param lossFunc: The function used to calculate the training loss.
+        :type lossFunc: str
+        :param metrics: A list of metrics to track during training.
+        :type metrics: list[str]
+        """
+        self._model_validate()
+        self._model.compile(
+            optimizer=Adam(learning_rate=learning_rate),
+            loss=lossFunc,
+            metrics=metrics
+        )
+
