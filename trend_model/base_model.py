@@ -76,3 +76,11 @@ class Model:
 
     def compile_lstm(self, ):
         self._model.compile(loss='mean_squared_error', optimizer='adam')
+
+    def _model_validator(self)  -> None:
+        """
+        Validates if there is a model instantiated.
+        """
+        if self.model is None:
+            raise AttributeError("There is no Model!")
+        
