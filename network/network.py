@@ -10,7 +10,7 @@ from sklearn.metrics import mean_absolute_error
 
 class Model:
     """
-    Used as an interface between keras' sequantial model
+    Used as an interface between keras' sequential model
     (that is used to create an MLP).
     """
     def __init__(self):
