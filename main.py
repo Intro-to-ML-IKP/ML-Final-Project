@@ -25,7 +25,7 @@ def explore_different_architectures(
         pointsPerSet: int = 10,
         numSets: int = 50,
         labelsPerSet: int = 1,
-        testingPercentage: float = 0.8,
+        trainingPercentage: float = 0.8,
         validationPercentage: float = 0.1,
         maxEpochs: int = 50,
         save_param_list: bool = False
@@ -69,9 +69,9 @@ def explore_different_architectures(
     :type numSets: int
     :param labelsPerSet: Number of labels per set. Default is 1.
     :type labelsPerSet: int
-    :param testingPercentage: Percentage of data used for testing. 
+    :param trainingPercentage: Percentage of data used for training. 
         Default is 0.8.
-    :type testingPercentage: float
+    :type trainingPercentage: float
     :param validationPercentage: Percentage of data used for validation. 
         Default is 0.1.
     :type validationPercentage: float
@@ -115,7 +115,7 @@ def explore_different_architectures(
 
     # Get the parameter list
     paramList = pConst.getParamList()
-    paramList = [tuple(([10, 8], 0.0050, 5)) for _ in range(100)]
+    paramList = [tuple(([9, 16, 48, 48, 16, 8], 0.0050, 5)) for _ in range(50)]
 
     if save_param_list:
         with open("paramsList.txt", "w") as f:
@@ -129,7 +129,7 @@ def explore_different_architectures(
         pointsPerSet,
         numSets,
         labelsPerSet,
-        testingPercentage,
+        trainingPercentage,
         validationPercentage
         )
     
@@ -210,7 +210,7 @@ def forcast_closing_prices(
         points_per_set: int = 10,
         num_sets: int = 50,
         labels_per_set: int = 1,
-        testing_percentage: float = 0.8,
+        training_percentage: float = 0.8,
         validation_percentage: float = 0.1
         ) -> tuple[list[float], float]:
     """
@@ -259,9 +259,9 @@ def forcast_closing_prices(
     :type num_sets: int
     :param labels_per_set: Number of labels per data set. Default is 1.
     :type labels_per_set: int
-    :param testing_percentage: Percentage of data used for testing. 
+    :param training_percentage: Percentage of data used for testing. 
         Default is 0.8.
-    :type testing_percentage: float
+    :type training_percentage: float
     :param validation_percentage: Percentage of data used for validation. 
         Default is 0.1.
     :type validation_percentage: float
@@ -288,7 +288,7 @@ def forcast_closing_prices(
         points_per_set,
         num_sets,
         labels_per_set,
-        testing_percentage,
+        training_percentage,
         validation_percentage
         )
 
@@ -428,16 +428,16 @@ def plot_train_val_losses(filename: str, folder: str):
     all_lengths = [len(seq) for seq in (training_loss_data + validation_loss_data)]
     median_length = int(np.median(all_lengths))
 
-    biggest_sigma = 0
-    biggest_sigma_index = 0
+    min_val_loss = 10
+    min_val_loss_index = 0
     for index, dat in enumerate(validation_loss_data):
-        dat_std = np.array(dat).std()
-        if dat_std > biggest_sigma:
-            biggest_sigma = dat_std
-            biggest_sigma_index = index
+        dat_min = np.array(dat).min()
+        if dat_min < min_val_loss:
+            min_val_loss = dat_min
+            min_val_loss_index = index
 
-    biggests_sigma_val_loss = validation_loss_data[biggest_sigma_index]
-    biggests_sigma_train_loss = training_loss_data[biggest_sigma_index]
+    biggests_sigma_val_loss = validation_loss_data[min_val_loss_index]
+    biggests_sigma_train_loss = training_loss_data[min_val_loss_index]
 
     for index in range(len(validation_loss_data)):
         plt.plot(validation_loss_data[index], label='Validation Loss', color='red')
@@ -483,6 +483,6 @@ def plot_train_val_losses(filename: str, folder: str):
 
 
 if __name__ == "__main__":
-    #explore_different_architectures("AAPL", "best_nn", "ml_best_nn_l2_reg_batch_normalization", maxEpochs=50)
-    plot_train_val_losses("best_nn", "ml_best_nn_l2_reg_batch_normalization")
+    #explore_different_architectures("AAPL", "big_nn", "big_nn_reg", maxEpochs=100)
+    plot_train_val_losses("best_nn", "ml_best_nn")
     #perform_statistical_analysis("ffnn_results", "ml_with_stoppage")

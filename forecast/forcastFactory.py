@@ -68,7 +68,7 @@ class ForcastFactory:
             self._points_per_set,
             self._num_sets,
             self._labels_per_set,
-            self._testing_percentage,
+            self._training_percentage,
             self._validation_percentage
             )
         
