@@ -45,7 +45,7 @@ class ForcastFactoryInitializer:
             points_per_set: int = 10,
             num_sets: int = 50,
             labels_per_set: int = 1,
-            testing_percentage: float = 0.8,
+            training_percentage: float = 0.8,
             validation_percentage: float = 0.1
             ) -> dict:
         """
@@ -59,9 +59,9 @@ class ForcastFactoryInitializer:
         :type num_sets: int
         :param labels_per_set: Number of labels per set. Default is 1.
         :type labels_per_set: int
-        :param testing_percentage: Percentage of data allocated to testing. 
+        :param training_percentage: Percentage of data allocated to testing. 
         Default is 0.8.
-        :type testing_percentage: float
+        :type training_percentage: float
         :param validation_percentage: Percentage of data allocated to validation. 
         Default is 0.1.
         :type validation_percentage: float

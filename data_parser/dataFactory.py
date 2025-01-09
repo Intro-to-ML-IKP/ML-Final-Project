@@ -16,7 +16,7 @@ class StockDataFactory:
             points_per_set: int,
             num_of_sets: int,
             labels_per_set: int,
-            testing_percentage: float,
+            training_percentage: float,
             validation_percentage: float
             ) -> None:
         """
@@ -30,9 +30,9 @@ class StockDataFactory:
         :type num_of_sets: int
         :param labels_per_set: the labels per set
         :type labels_per_set: int
-        :param testing_percentage: the testing percentage.
+        :param training_percentage: the testing percentage.
         Used to generate test data.
-        :type testing_percentage: float
+        :type training_percentage: float
         :param validation_percentage: the validation percentage.
         Used to generate validation data.
         :type validation_percentage: float
@@ -41,7 +41,7 @@ class StockDataFactory:
         self._num_of_sets = num_of_sets
         self._points_per_set = points_per_set
         self._labels_per_set = labels_per_set
-        self._testing_percentage = testing_percentage
+        self._training_percentage = training_percentage
         self._validation_percentage = validation_percentage
 
         self._data_reader: DataReader|None = None
@@ -111,7 +111,7 @@ class StockDataFactory:
             ) = self._data_processor.split_data(
                 data,
                 labels,
-                self._testing_percentage,
+                self._training_percentage,
                 self._validation_percentage
                 )
         
