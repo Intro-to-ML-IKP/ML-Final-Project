@@ -97,3 +97,11 @@ class Model:
             metrics=metrics
         )
 
+
+    def _model_validator(self)  -> None:
+        """
+        Validates if there is a model instantiated.
+        """
+        if self.model is None:
+            raise AttributeError("There is no Model!")
+
