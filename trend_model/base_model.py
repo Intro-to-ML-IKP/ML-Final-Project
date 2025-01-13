@@ -1,17 +1,5 @@
-import numpy as np
-from tensorflow import keras
-from tensorflow.keras.models import Sequential # type: ingore
-from tensorflow.keras.layers import BatchNormalization,LSTM, Reshape # type: ingore
-from tensorflow.keras.optimizers import Adam # type: ingore
-from tensorflow.keras.callbacks import EarlyStopping # type: ignore
-from sklearn.metrics import mean_absolute_error
-from typing import Any
-#from statsmodels.tsa.arima.model import ARIMA
-from tensorflow.python.keras import Input
 from tensorflow.python.keras.layers import Dense
-from tensorflow.python.keras.regularizers import l2
 from typing_extensions import override
-
 from network.network import Model
 
 
@@ -42,9 +30,9 @@ class LstmModel(Model):
     @override
     def create_sequential_model(
             self,
-            lstm_neurons: int,
-            model_shape: list[float],
-            activations: list[str],
+            look_back: int,
+            model_shape: int,
+            # activations: list[str],
             input_shape: int,
             output_size: int
     ) -> None:
@@ -64,24 +52,14 @@ class LstmModel(Model):
         model = Sequential()
 
         # Defining LSTM model
-        #model.add(Input(shape=(input_shape,)))
-        model.add(LSTM(lstm_neurons, batch_input_shape=input_shape, stateful=True))
-        model.add(Dense(1))
-
-        # Add all layers, including hidden layers and the output layer
-        '''for number_of_neurons, activation in zip(model_shape, activations[:-1]):
-            model.add(Dense(number_of_neurons, activation=activation, kernel_regularizer=l2(0.01)),
-                      BatchNormalization())'''
-
-        model.compile(loss='mean_squared_error', optimizer='adam')
-
-
-        # Add the output layer
-        #model.add(Dense(output_size, activation=activations[-1], kernel_regularizer=l2(0.01)), BatchNormalization())
+        model.add(LSTM(model_shape, batch_input_shape=(input_shape, look_back)))
+        # output layer
+        model.add(Dense(output_size))
 
         self._model = model
 
-class Model:
+
+'''class Model:
     """
     Used as an interface between keras' sequential model
     (that is used to create an MLP).
@@ -272,7 +250,4 @@ class Model:
         if self.model is None:
             raise AttributeError("There is no Model!")
         
-
-
-
-
+'''

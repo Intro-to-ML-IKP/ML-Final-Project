@@ -11,9 +11,9 @@ from trend_model.base_model import LstmModel
     testing_labels
     ) = get_training_data()
 
-lstm = LstmModel() # needs params
+lstm = LstmModel()
 
-lstm.create_sequential_model()#(FILL SHIT IN THIS)
+lstm.create_sequential_model(10, 10, training_data.shape[0], training_labels.shape[0])
 
 lstm.compileModel(0.001, "mean square error", metrics=["mae"])
 
