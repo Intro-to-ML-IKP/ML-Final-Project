@@ -3,6 +3,8 @@ from tensorflow.python.keras.layers.recurrent import LSTM
 from tensorflow.python.keras.models import Sequential
 from typing_extensions import override
 from network.network import Model
+from tensorflow.keras.optimizers import Adam # type: ignore
+
 
 
 # TO DO:
@@ -65,6 +67,31 @@ class LstmModel(Model):
 
     # def model(self) -> Sequential:
     #     return self._model
+
+    @override
+    def compileModel(
+            self,
+            learning_rate: float,
+            lossFunc: str,
+            metrics: list[str]
+            ) -> None:
+        """
+        Compiles the model to prepare it for training.
+
+        :param learning_rate: The step size used for training.
+        :type learning_rate: float
+        :param lossFunc: The function used to calculate the training loss.
+        :type lossFunc: str
+        :param metrics: A list of metrics to track during training.
+        :type metrics: list[str]
+        """
+        self._model_validator()
+        # self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=metrics)
+        self.model.compile(
+            optimizer=Adam(learning_rate=learning_rate),
+            loss=lossFunc,
+            metrics=metrics
+            )
 
 
 '''class Model:

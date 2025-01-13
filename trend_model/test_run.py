@@ -15,6 +15,6 @@ def run():
 
     lstm.create_sequential_model(10, 10, training_data.shape, training_labels.shape[0])
 
-    lstm.compileModel(0.001, "mean square error", metrics=["mae"])
+    lstm.compileModel(0.001, "mean_squared_error", metrics=["mae"])
 
     lstm.trainModel(training_data, training_labels, validation_data, validation_labels, epochs=50, batch_size=5)
