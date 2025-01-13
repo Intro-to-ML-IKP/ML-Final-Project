@@ -13,7 +13,7 @@ def run():
 
     lstm = LstmModel()
 
-    lstm.create_sequential_model(10, 10, training_data.shape[0], training_labels.shape[0])
+    lstm.create_sequential_model(10, 10, training_data.shape, training_labels.shape[0])
 
     lstm.compileModel(0.001, "mean square error", metrics=["mae"])
 

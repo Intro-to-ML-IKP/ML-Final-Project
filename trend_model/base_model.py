@@ -1,5 +1,5 @@
 from tensorflow.python.keras.layers import Dense
-from tensorflow.python.keras.layers import LSTM
+from tensorflow.python.keras.layers.recurrent import LSTM
 from tensorflow.python.keras.models import Sequential
 from typing_extensions import override
 from network.network import Model
@@ -24,7 +24,7 @@ class LstmModel(Model):
     """
     The base class for all models.
     """
-    _model = None
+    #_model = None
 
     '''def create_ARIMA_model(self, p, d, q, series):
         self._model = ARIMA(series, p, d, q)'''
@@ -35,7 +35,7 @@ class LstmModel(Model):
             look_back: int,
             model_shape: int,
             # activations: list[str],
-            input_shape: int,
+            input_shape: list[int],
             output_size: int
     ) -> None:
         """
@@ -54,11 +54,17 @@ class LstmModel(Model):
         model = Sequential()
 
         # Defining LSTM model
-        model.add(LSTM(model_shape, batch_input_shape=(input_shape, look_back)))
+        model.add(
+            LSTM(
+                model_shape, batch_input_shape=(
+                    input_shape[0], input_shape[1], look_back)))
         # output layer
         model.add(Dense(output_size))
 
-        self._model = model
+        self.model = model
+
+    # def model(self) -> Sequential:
+    #     return self._model
 
 
 '''class Model:
