@@ -1,4 +1,6 @@
 from tensorflow.python.keras.layers import Dense
+from tensorflow.python.keras.layers import LSTM
+from tensorflow.python.keras.models import Sequential
 from typing_extensions import override
 from network.network import Model
 
