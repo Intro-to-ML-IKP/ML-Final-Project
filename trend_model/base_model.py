@@ -63,20 +63,21 @@ class LstmModel(Model):
 
         model = Sequential()
 
-        # Define the input layer
+        # Defining LSTM model
         #model.add(Input(shape=(input_shape,)))
         model.add(LSTM(lstm_neurons, batch_input_shape=input_shape, stateful=True))
+        model.add(Dense(1))
 
         # Add all layers, including hidden layers and the output layer
-        for number_of_neurons, activation in zip(model_shape, activations[:-1]):
+        '''for number_of_neurons, activation in zip(model_shape, activations[:-1]):
             model.add(Dense(number_of_neurons, activation=activation, kernel_regularizer=l2(0.01)),
-                      BatchNormalization())
+                      BatchNormalization())'''
 
         model.compile(loss='mean_squared_error', optimizer='adam')
 
 
         # Add the output layer
-        model.add(Dense(output_size, activation=activations[-1], kernel_regularizer=l2(0.01)), BatchNormalization())
+        #model.add(Dense(output_size, activation=activations[-1], kernel_regularizer=l2(0.01)), BatchNormalization())
 
         self._model = model
 
