@@ -483,6 +483,9 @@ def plot_train_val_losses(filename: str, folder: str):
 
 
 if __name__ == "__main__":
+    from trend_model.test_run import run
+    run()
+
     #explore_different_architectures("AAPL", "big_nn", "big_nn_reg", maxEpochs=100)
-    plot_train_val_losses("best_nn", "ml_best_nn")
+    #plot_train_val_losses("best_nn", "ml_best_nn")
     #perform_statistical_analysis("ffnn_results", "ml_with_stoppage")
