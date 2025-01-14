@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from typing import Any
 from tensorflow import keras
 from tensorflow.keras.models import Sequential # type: ignore
@@ -170,7 +171,8 @@ class Model:
 
     def save_model(
             self,
-            stockName: str
+            folderName: str,
+            fileName: str
             ) -> None:
         """
         Saves the model.
@@ -180,9 +182,24 @@ class Model:
         'stockName_model.keras'
         and is going to be stored in the models folder.
         """
+        # Run validation check
         self._model_validator()
-        self.model.\
-            save(f"models/{stockName}_model.keras")
+
+        # Defining the folder to store all the models
+        models_folder = os.path.join(os.getcwd(), "models")
+
+        # Particular folder to store the model
+        desired_folder = os.path.join(models_folder, folderName)
+
+        # Include the model's name
+        filepath = os.path.join(desired_folder, f"{fileName}_model.keras")
+
+        # Create the dir if it doesn't exists
+        if not os.path.exists(desired_folder):
+            os.makedirs(desired_folder)
+
+        # Save model
+        self.model.save(filepath)
 
     def load_model(
             self,
