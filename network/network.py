@@ -1,13 +1,12 @@
 import numpy as np
-import os
 from typing import Any
+import os
 from tensorflow import keras
-# from tensorflow import keras
-from tensorflow.python.keras.models import Sequential  # type: ignore
-from tensorflow.keras.layers import Dense, Input, BatchNormalization  # type: ignore
-from tensorflow.keras.regularizers import l2  # type: ignore
-from tensorflow.keras.optimizers import Adam  # type: ignore
-from tensorflow.keras.callbacks import EarlyStopping  # type: ignore
+from tensorflow.keras.models import Sequential # type: ignore
+from tensorflow.keras.layers import Dense,Input,BatchNormalization # type: ignore
+from tensorflow.keras.regularizers import l2 # type: ignore
+from tensorflow.keras.optimizers import Adam # type: ignore
+from tensorflow.keras.callbacks import EarlyStopping # type: ignore
 from sklearn.metrics import mean_absolute_error
 
 
