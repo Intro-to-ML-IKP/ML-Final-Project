@@ -2,18 +2,21 @@ import numpy as np
 import os
 from typing import Any
 from tensorflow import keras
-from tensorflow.keras.models import Sequential # type: ignore
-from tensorflow.keras.layers import Dense,Input,BatchNormalization # type: ignore
-from tensorflow.keras.regularizers import l2 # type: ignore
-from tensorflow.keras.optimizers import Adam # type: ignore
-from tensorflow.keras.callbacks import EarlyStopping # type: ignore
+# from tensorflow import keras
+from tensorflow.python.keras.models import Sequential  # type: ignore
+from tensorflow.keras.layers import Dense, Input, BatchNormalization  # type: ignore
+from tensorflow.keras.regularizers import l2  # type: ignore
+from tensorflow.keras.optimizers import Adam  # type: ignore
+from tensorflow.keras.callbacks import EarlyStopping  # type: ignore
 from sklearn.metrics import mean_absolute_error
+
 
 class Model:
     """
     Used as an interface between keras' sequential model
     (that is used to create an MLP).
     """
+
     def __init__(self):
         """
         Instantiates a model.
@@ -22,11 +25,11 @@ class Model:
 
     def create_sequential_model(
             self,
-            model_shape : list[float],
+            model_shape: list[float],
             activations: list[str],
             input_shape: int,
             output_size: int
-            ) -> None:
+    ) -> None:
         """
         Creates the model architecture and assigns it to the model attribute.
 
@@ -47,7 +50,8 @@ class Model:
 
         # Add all layers, including hidden layers and the output layer
         for number_of_neurons, activation in zip(model_shape, activations[:-1]):
-            model.add(Dense(number_of_neurons, activation=activation, kernel_regularizer=l2(0.01)), BatchNormalization())
+            model.add(Dense(number_of_neurons, activation=activation, kernel_regularizer=l2(0.01)),
+                      BatchNormalization())
 
         # Add the output layer
         model.add(Dense(output_size, activation=activations[-1], kernel_regularizer=l2(0.01)), BatchNormalization())
@@ -59,7 +63,7 @@ class Model:
             learning_rate: float,
             lossFunc: str,
             metrics: list[str]
-            ) -> None:
+    ) -> None:
         """
         Compiles the model to prepare it for training.
 
@@ -75,7 +79,7 @@ class Model:
             optimizer=Adam(learning_rate=learning_rate),
             loss=lossFunc,
             metrics=metrics
-            )
+        )
 
     def trainModel(
             self,
@@ -85,7 +89,7 @@ class Model:
             validation_labels: np.ndarray,
             epochs: int,
             batch_size: int
-            ) -> None:
+    ) -> None:
         """
         Trains the model using specified training and validation data.
 
@@ -111,18 +115,18 @@ class Model:
 
         # Stops training when validation performance stops improving
         early_stopping = EarlyStopping(monitor="val_loss", patience=4)
-        
+
         history = self.model.fit(
             training_data,
             training_labels,
             epochs=epochs,
             batch_size=batch_size,
-            validation_data=(validation_data, validation_labels), 
+            validation_data=(validation_data, validation_labels),
             callbacks=[early_stopping],
             verbose=0
         )
 
-        training_loss = history.history["loss"]        # Training loss per epoch
+        training_loss = history.history["loss"]  # Training loss per epoch
         validation_loss = history.history["val_loss"]  # Validation loss per epoch
 
         return training_loss, validation_loss
@@ -130,7 +134,7 @@ class Model:
     def predict(
             self,
             data: np.ndarray
-            ) -> np.ndarray:
+    ) -> np.ndarray:
         """
         Makes a prediction on the specified data using the trained model
         
@@ -142,12 +146,12 @@ class Model:
         self._model_validator()
         predictions = self.model.predict(data)
         return predictions
-    
+
     def compute_mae(
             self,
             testing_data: np.ndarray,
             testing_labels: np.ndarray
-            ) -> float:
+    ) -> float:
         """
         Computes the mean absolute error of the model.
 
@@ -161,7 +165,7 @@ class Model:
         predictions = self.predict(testing_data)
         mae = mean_absolute_error(testing_labels, predictions)
         return mae
-    
+
     def model_summary(self) -> Any:
         """
         Returns the summary of the model.
@@ -204,7 +208,7 @@ class Model:
     def load_model(
             self,
             stockName: str
-            ) -> None:
+    ) -> None:
         """
         Loads a model from the models folder.
 
@@ -214,18 +218,17 @@ class Model:
         If the file doesn't exists it will raise an exception.
         """
         try:
-            self.model = keras.models.\
+            self.model = keras.models. \
                 load_model(f"models/{stockName}_model.keras")
         except FileExistsError(
-            f"No such Model named '{stockName}_model.keras'"
-            "exists in the 'models' folder!"
-            ) as e:
+                f"No such Model named '{stockName}_model.keras'"
+                "exists in the 'models' folder!"
+        ) as e:
             raise e
 
-    def _model_validator(self)  -> None:
+    def _model_validator(self) -> None:
         """
         Validates if there is a model instantiated.
         """
         if self.model is None:
             raise AttributeError("There is no Model!")
-        

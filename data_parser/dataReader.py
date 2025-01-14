@@ -89,7 +89,7 @@ class DataReader:
                 )
 
         raise ValueError(
-            "Unable to retrieve sufficient data after"
+            "Unable to retrieve sufficient data after "
             f"{max_attempts} attempts."
             )
 
