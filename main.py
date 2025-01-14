@@ -115,7 +115,7 @@ def explore_different_architectures(
 
     # Get the parameter list
     paramList = pConst.getParamList()
-    paramList = [tuple(([9, 16, 48, 48, 16, 8], 0.0050, 5)) for _ in range(50)]
+    paramList = [tuple(([10,8], 0.0050, 5)) for _ in range(200)]
 
     if save_param_list:
         with open("paramsList.txt", "w") as f:
@@ -185,13 +185,6 @@ def explore_different_architectures(
         f"{results_filename}_validation_loss",
         results_foldername
         )
-
-
-    # Save the results
-    # result_hanler = ResultsHandler(sorted_results, mae=False)
-    # result_hanler.save_results(results_filename, results_foldername)
-
-    # return sorted_results
 
 def forcast_closing_prices(
         stock_name: str = "AAPL",
@@ -418,11 +411,13 @@ def plot_train_val_losses(filename: str, folder: str):
     # Load the data from the files
     if os.path.exists(filename_train):
         with open(filename_train, "rb") as file:
-            training_loss_data = pickle.load(file)
+            training_loss_data_ = pickle.load(file)
+    training_loss_data = [tup[1] for tup in training_loss_data_]
 
     if os.path.exists(filename_val):
         with open(filename_val, "rb") as file:
-            validation_loss_data = pickle.load(file)
+            validation_loss_data_ = pickle.load(file)
+    validation_loss_data = [tup[1] for tup in validation_loss_data_]
 
     # Determine the median length of all sequences
     all_lengths = [len(seq) for seq in (training_loss_data + validation_loss_data)]
@@ -470,7 +465,7 @@ def plot_train_val_losses(filename: str, folder: str):
     plt.fill_between(epochs, avg_val_loss - std_val_loss, avg_val_loss + std_val_loss, color='red', alpha=0.2)
 
     # Add a vertical line at the median length
-    plt.axvline(x=median_length, color='green', linestyle='--', label=f'Median Length ({median_length})')
+    #plt.axvline(x=median_length, color='green', linestyle='--', label=f'Median Length ({median_length})')
 
     # Labels and title
     plt.title('Average Training and Validation Loss with Variance')
@@ -483,6 +478,10 @@ def plot_train_val_losses(filename: str, folder: str):
 
 
 if __name__ == "__main__":
-    #explore_different_architectures("AAPL", "big_nn", "big_nn_reg", maxEpochs=100)
-    plot_train_val_losses("best_nn", "ml_best_nn")
-    #perform_statistical_analysis("ffnn_results", "ml_with_stoppage")
+    #forcast_closing_prices()
+    #explore_different_architectures("AAPL", "best_nn_early_stoppage", "best_nn_stoppage", maxEpochs=100)
+    #plot_train_val_losses("best_nn_early_stoppage", "best_nn_stoppage")
+    #perform_statistical_analysis("best_nn_early_stoppage", "best_nn_stoppage")
+    from trend_model.test_run import run
+
+    run()

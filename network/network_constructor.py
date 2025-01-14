@@ -179,6 +179,9 @@ class NetworksConstructor:
             testing_labels
             )
 
+        # Adding the model id (just the count) this paramSet belongs to
+        paramSet = tuple((paramSet, count))
+
         # Print the progress on which model is currently being trained
         print(f"Now training the model {count}/{maxCount}")
         
@@ -202,8 +205,8 @@ class NetworksConstructor:
                 f"{results_filename}_{count}",
                 results_foldername
                 )
-
-        return [mae, paramSet], validation_loss, training_loss
+            
+        return [mae, paramSet], (count+1, validation_loss), (count+1, training_loss), model, count+1
 
     def explore_different_architectures(
         self,
@@ -276,11 +279,12 @@ class NetworksConstructor:
         with Pool(processes=5) as p: # processes - how many NNs we train at a time
             results = p.map(explore_with_args, full_param_list)
 
-        for result, validation_loss, training_loss in results:
+        for result, validation_loss, training_loss, model, count in results:
             self._validation_loss.append(validation_loss)
             self._training_loss.append(training_loss)
             self._results.append(result)
-
+            model.save_model("early_stoppage", f"AAPL_{count}")
+            
 class NetworksDict:
     def sort_results_list(self, result_list):
         sorted_results = self._sort_results(result_list)
