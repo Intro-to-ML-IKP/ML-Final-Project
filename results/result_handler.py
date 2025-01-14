@@ -354,7 +354,10 @@ class ResultsHandler:
 
         rows = []
 
-        for tup in values:
+        for val in values:
+            # Get the first tuple
+            tup = val[0]
+
             # Create a dictionary to hold the parameters for the current row
             row_data = {}
             
@@ -377,6 +380,9 @@ class ResultsHandler:
             # Get the corresponding MAES for this row
             row_data["MAES"] = maes.pop(0)
 
+            # Get the id of the model
+            row_data["id"] = val[1]
+            
             # Append the row data to the list of rows
             rows.append(row_data)
 
