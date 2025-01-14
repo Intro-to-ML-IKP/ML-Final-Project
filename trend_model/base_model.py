@@ -1,6 +1,6 @@
-from tensorflow.python.keras.layers import Dense
-from tensorflow.python.keras.layers.recurrent import LSTM
-from tensorflow.python.keras.models import Sequential
+from tensorflow.keras.layers import Dense # type: ignore
+from tensorflow.keras.layers import LSTM # type: ignore
+from tensorflow.keras.models import Sequential # type: ignore
 from typing_extensions import override
 from network.network import Model
 from tensorflow.keras.optimizers import Adam # type: ignore
@@ -52,44 +52,21 @@ class LstmModel(Model):
         :param output_size: Number of neurons in the output layer.
         :type output_size: int
         """
-
-        model = Sequential()
+        print(model_shape)
+        model = Sequential([
+            LSTM(units=model_shape, input_shape=(input_shape[1], look_back)),
+            Dense(units=output_size)
+        ])
 
         # Defining LSTM model
-        model.add(
-            LSTM(
-                model_shape, batch_input_shape=(
-                    input_shape[0], input_shape[1], look_back)))
-        # output layer
-        model.add(Dense(output_size))
+        # model.add(
+        #     LSTM(
+        #         model_shape, input_shape=(
+        #             input_shape[0], input_shape[1], look_back)))
+        # # output layer
+        # model.add(Dense(output_size))
 
         self.model = model
 
     # def model(self) -> Sequential:
     #     return self._model
-
-    @override
-    def compileModel(
-            self,
-            learning_rate: float,
-            lossFunc: str,
-            metrics: list[str]
-            ) -> None:
-        """
-        Compiles the model to prepare it for training.
-
-        :param learning_rate: The step size used for training.
-        :type learning_rate: float
-        :param lossFunc: The function used to calculate the training loss.
-        :type lossFunc: str
-        :param metrics: A list of metrics to track during training.
-        :type metrics: list[str]
-        """
-        self._model_validator()
-        # self.model.compile(loss='mean_squared_error', optimizer='adam', metrics=metrics)
-        self.model.compile(
-            optimizer=Adam(learning_rate=learning_rate),
-            loss=lossFunc,
-            metrics=metrics
-            )
-
