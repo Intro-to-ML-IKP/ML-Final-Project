@@ -1,5 +1,9 @@
+import math
+
 import numpy as np
 from sklearn import preprocessing
+from sklearn.metrics import mean_squared_error
+
 from trend_model import get_training_data
 from trend_model.base_model import LstmModel
 
@@ -39,15 +43,16 @@ def run():
 
     lstm.trainModel(x_train, training_labels, x_val, validation_labels, epochs=20, batch_size=15)
     scaled_testing_data = scale_data(testing_data, min_max_scaler)
-    y_test = reshape_input(scaled_testing_data)
+    x_test = reshape_input(scaled_testing_data)
     # scaled_testing_labels = scale_data(testing_labels)
 
-    y_scaled_predictions = lstm.predict(y_test)
-    print("y_scaled_predictions shape ",y_scaled_predictions.shape)
+    y_scaled_predictions = lstm.predict(x_test)
+    print("y_scaled_predictions shape ", y_scaled_predictions.shape)
     print(testing_labels.shape)
-    print(y_predictions.shape)
     y_predictions = min_max_scaler.inverse_transform(y_scaled_predictions)
-   
+
+    print(y_predictions.shape)
+
     rmse = math.sqrt(mean_squared_error(testing_labels, y_predictions))
     print('Train Score: %.2f RMSE' % (rmse)) 
 
