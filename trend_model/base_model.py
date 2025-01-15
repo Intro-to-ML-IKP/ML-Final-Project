@@ -81,12 +81,15 @@ class LstmModel(Model):
         :type batch_size: int
         """
 
-        data = [training_data, training_labels,
-                validation_data, validation_labels]
+        x_data = [training_data, validation_data]
+        y_data = [training_labels, validation_labels]
 
-        data = [self.scaler.scale_data(dt) for dt in data]
+        x_data = [self.scaler.scale_data(dt) for dt in x_data]
+        x_data = [self.scaler.reshape_input(dt) for dt in x_data]
 
-        return super().trainModel(data[0], data[1], data[2], data[3], epochs, batch_size)
+        y_data = [self.scaler.scale_data(dt) for dt in y_data]
+
+        return super().trainModel(x_data[0], y_data[0], x_data[1], y_data[1], epochs, batch_size)
 
     def predict(
             self,
@@ -102,8 +105,12 @@ class LstmModel(Model):
         """
         x_test = data
         x_test = self.scaler.scale_data(x_test)
+        x_test = self.scaler.reshape_input(x_test)
 
         predictions = super().predict(x_test)
 
-        y_predictions = self.scaler.inverse_scaled_data(predictions)
-        return y_predictions
+        padded_predictions = np.zeros((predictions.shape[0], 9))    # dummy values to avoid input-output shape mismatch
+        padded_predictions[:, 0] = predictions[:, 0]
+
+        y_predictions = self.scaler.inverse_scaled_data(padded_predictions)
+        return y_predictions[:, 0].reshape(-1, 1)
