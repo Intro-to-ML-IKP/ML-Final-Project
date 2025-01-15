@@ -37,6 +37,7 @@ class NetworksConstructor:
     """
     def __init__(
             self,
+            model: Model,
             input_size: int,
             output_size: int,
             epochs: int
@@ -57,6 +58,7 @@ class NetworksConstructor:
         self.input_size = input_size
         self.output_size = output_size
         self.epochs = epochs
+        self.model: Model = model
 
     @property
     def training_loss(self):
@@ -97,7 +99,7 @@ class NetworksConstructor:
         :return: the model
         :rtype: Model
         """
-        model = Model()
+        model = self.model()
 
         model.create_sequential_model(
             architecture,
