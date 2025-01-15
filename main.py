@@ -1,11 +1,14 @@
 from utils import print_nice_title # type: ignore
-from network.parameterConstructor import ParameterConstructor
+from network.parameterConstructor import ParameterConstructor, ParameterConstructorLSTM
 from network.network_constructor import NetworksConstructor, NetworksDict
 from results.result_handler import ResultsHandler
 from data_parser.dataFactory import StockDataFactory, DataReader
 from forecast.forecastFactory_initializer import ForcastFactoryInitializer
 from forecast.forcastFactory import ForcastFactory
+from forecast.forecastFactoryEnsemble import ForcastFactoryEnsemble
 from visualisation.visualize import PlotStocks
+from network.network import Model
+from trend_model.base_model import LstmModel
 
 
 def explore_different_architectures(
@@ -28,7 +31,8 @@ def explore_different_architectures(
         trainingPercentage: float = 0.8,
         validationPercentage: float = 0.1,
         maxEpochs: int = 50,
-        save_param_list: bool = False
+        save_param_list: bool = False,
+        lstm: bool = False
         ) -> dict:
     """
     Explores different neural network architectures for a specified stock 
@@ -86,7 +90,10 @@ def explore_different_architectures(
     :rtype: dict
     """
     # Generate list of parameters
-    pConst = ParameterConstructor()
+    if lstm is False:
+        pConst = ParameterConstructor()
+    else:
+        pConst = ParameterConstructorLSTM()
 
     # Calculate possible permutations of architectures
     pConst.calcNetworkArchitectures(
@@ -115,7 +122,8 @@ def explore_different_architectures(
 
     # Get the parameter list
     paramList = pConst.getParamList()
-    paramList = [tuple(([10,8], 0.0050, 5)) for _ in range(200)]
+
+    #paramList = [tuple(([10,8], 0.0050, 5)) for _ in range(200)]
 
     if save_param_list:
         with open("paramsList.txt", "w") as f:
@@ -134,22 +142,40 @@ def explore_different_architectures(
         )
     
     # Get the data from the data factory
-    (
-        training_data,
-        validation_data,
-        testing_data,
-        training_labels,
-        validation_labels,
-        testing_labels
-        ) = dataFactory.get_stock_data()
+    if lstm is False:
+        (
+            training_data,
+            validation_data,
+            testing_data,
+            training_labels,
+            validation_labels,
+            testing_labels
+            ) = dataFactory.get_stock_data()
+    else:
+        (
+            training_data,
+            validation_data,
+            testing_data,
+            training_labels,
+            validation_labels,
+            testing_labels
+            ) = dataFactory.get_stock_data(sma_data=True)
     
     # Construct a network
     input_size = len(training_data[0])
     output_size = len(training_labels[0])
-    netConst = NetworksConstructor(
-        input_size,
-        output_size,
-        maxEpochs)
+    if lstm is False:
+        netConst = NetworksConstructor(
+            Model,
+            input_size,
+            output_size,
+            maxEpochs)
+    else:
+        netConst = NetworksConstructor(
+            LstmModel,
+            input_size,
+            output_size,
+            maxEpochs)
     
     # Explore different model based on the generated parameters list
     netConst.explore_different_architectures(
@@ -314,6 +340,109 @@ def forcast_closing_prices(
     predicted_closing_prices = forcaster.predicted_closing_prices
 
     return predicted_closing_prices, mse
+
+def test_ensemble_model(
+        stock_name: str = "AAPL",
+        number_of_predictions: int = 5,
+        raw_data_amount: int = 90,
+        sma_lookback_period: int = 3,
+        regression_window: int | None = None,
+        end_date: str = "2025-01-15",
+        interval: str = "1d",
+        points_per_set: int = 10,
+        num_sets: int = 50,
+        labels_per_set: int = 1,
+        training_percentage: float = 0.8,
+        validation_percentage: float = 0.1
+        ) -> tuple[list[float], float]:
+    """
+    Forecasts closing prices for a specified stock using a neural network 
+    model. Generates data, trains the model, and plots predictions 
+    against observed values.
+
+    :param stock_name: Name of the stock to forecast.
+    :type stock_name: str
+    :param number_of_predictions: Number of closing price predictions to 
+        generate.
+    :type number_of_predictions: int
+    :param raw_data_amount: Amount of raw historical data to retrieve. 
+        Default is 50.
+    :type raw_data_amount: int
+    :param sma_lookback_period: Lookback period for calculating the Simple 
+        Moving Average (SMA). Default is 3.
+    :type sma_lookback_period: int
+    :param regression_window: Optional window size for regression. 
+        Default is None.
+    :type regression_window: int or None
+    :param end_date: End date for historical data retrieval in "YYYY-MM-DD" 
+        format. Default is "2024-09-01".
+    :type end_date: str
+    :param interval: Interval for data points, e.g., "1d" for daily. 
+        Default is "1d".
+    :type interval: str
+    :param architecture: List specifying the number of neurons in each 
+        network layer. Default is [13, 24].
+    :type architecture: list[int]
+    :param learning_rate: Learning rate for model training. Default is 0.01.
+    :type learning_rate: float
+    :param loss_function: Loss function for model training, e.g., "mse" 
+        (Mean Squared Error). Default is "mse".
+    :type loss_function: str
+    :param metrics: List of metrics to monitor during training, e.g., ["mae"].
+    :type metrics: list[str]
+    :param epochs: Number of epochs for training the model. Default is 50.
+    :type epochs: int
+    :param batch_size: Batch size for model training. Default is 5.
+    :type batch_size: int
+    :param points_per_set: Number of data points per set in the training data. 
+        Default is 10.
+    :type points_per_set: int
+    :param num_sets: Number of sets of data to generate. Default is 50.
+    :type num_sets: int
+    :param labels_per_set: Number of labels per data set. Default is 1.
+    :type labels_per_set: int
+    :param training_percentage: Percentage of data used for testing. 
+        Default is 0.8.
+    :type training_percentage: float
+    :param validation_percentage: Percentage of data used for validation. 
+        Default is 0.1.
+    :type validation_percentage: float
+
+    :return: A tuple containing the list of predicted closing prices and 
+        the Mean Squared Error (MSE) between predictions and actual values.
+    :rtype: tuple[list[float], float]
+    """
+    # Create a forecast factory initializer
+    param_getter = ForcastFactoryInitializer()
+    
+    # Generate datafacotry parameters
+    datafactory_parameters = param_getter.generate_datafactory_parameters(
+        points_per_set,
+        num_sets,
+        labels_per_set,
+        training_percentage,
+        validation_percentage
+        )
+
+    # Create a forecast factory
+    forcaster = ForcastFactoryEnsemble(
+        stock_name=stock_name,
+        residual_model="AAPL_145_model.keras",
+        residual_model_folder="early_stoppage",
+        trend_model="test",
+        trend_model_folder="test",
+        datafactory_param_dict=datafactory_parameters
+        )
+
+    # Make the forecast
+    forcaster.predict(
+        number_of_predictions,
+        raw_data_amount,
+        sma_lookback_period,
+        regression_window,
+        end_date,
+        interval
+        )
 
 def perform_statistical_analysis(filename: str, foldername: str) -> None:
     """
@@ -501,7 +630,7 @@ def plot_train_val_losses(filename: str, folder: str, id: int|None = None):
 
 
 if __name__ == "__main__":
-    #forcast_closing_prices()
-    #explore_different_architectures("AAPL", "best_nn_early_stoppage_and_l2", "best_nn_stoppage_and_l2", maxEpochs=100)
+    #test_ensemble_model()
+    explore_different_architectures("AAPL", "best_nn_early_stoppage_and_l2", "best_nn_stoppage_and_l2", maxEpochs=100)
     #plot_train_val_losses("best_nn_early_stoppage", "best_nn_stoppage", id=145)
-    perform_statistical_analysis("best_nn_early_stoppage", "best_nn_stoppage")
+    #perform_statistical_analysis("best_nn_early_stoppage", "best_nn_stoppage")

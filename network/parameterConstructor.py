@@ -1,5 +1,6 @@
 import numpy as np
 import itertools
+import random
 
 class ParameterConstructor:
     """
@@ -128,3 +129,41 @@ class ParameterConstructor:
             (arch, lr, batch)
             for arch, lr, batch in self.paramList
             ]
+
+class ParameterConstructorLSTM(ParameterConstructor):
+    """
+    This class serves to generate permutations of different parameter
+    combinations based on user input.
+    """
+    def calcNetworkArchitectures(
+        self, 
+        maxLayers: int, 
+        minNeurons: int,
+        maxNeurons: int,
+        dNeurons: int
+        ) -> None:
+        """
+        Determines the list of different network architectures based on 
+        user-defined specifications.
+
+        :param maxLayers: The maximum number of hidden layers in the network.
+        :type maxLayers: int
+        :param minNeurons: The minimum number of neurons per hidden layer.
+        :type minNeurons: int
+        :param maxNeurons: The maximum number of neurons per hidden layer.
+        :type maxNeurons: int
+        :param dNeurons: The step size for the number of neurons per layer.
+        :type dNeurons: int
+        """
+        neuronCountList = np.arange(
+            start = minNeurons,
+            stop = maxNeurons+dNeurons,
+            step = dNeurons
+            )      # Possible amounts of neurons per layer
+        
+        self._architectures = [
+                [random.randint(1, 9), neuronCount]
+                for neuronCount in neuronCountList
+                for _ in range(maxLayers)
+            ]     # Creates a 1D list of all possible neuron counts over all layers
+        
