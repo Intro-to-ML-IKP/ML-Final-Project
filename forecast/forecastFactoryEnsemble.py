@@ -3,7 +3,19 @@ from sklearn.metrics import mean_absolute_error
 
 from forecast.forcastFactory import ForcastFactory
 from data_parser.dataFactory import StockDataFactory
+from data_parser.dataProcessor import DataProcessor
 from forecast.ensembleModel import EnsembleModel
+
+import numpy as np
+import tensorflow as tf
+import pandas as pd
+from sklearn.metrics import mean_squared_error
+from typing import Any
+from copy import deepcopy
+
+from network.networkFactory import NetworkFactory
+from data_parser.dataFactory import StockDataFactory
+from visualisation.visualize import PlotStocks, PlotForcastComparison
 
 
 class ForcastFactoryEnsemble(ForcastFactory):
@@ -71,7 +83,6 @@ class ForcastFactoryEnsemble(ForcastFactory):
             )
         
         # Values being infered
-        self._number_of_predictions: int|None = None
         self._end_date: str|None = None
         self._interval: str|None = None
 
@@ -126,8 +137,6 @@ class ForcastFactoryEnsemble(ForcastFactory):
         :param interval: the scale of the candles, defaults to "1d"
         :type interval: str, optional
         """
-        self._number_of_predictions = number_of_predictions
-
         self._get_raw_data(raw_data_amount, end_date, interval)
 
         self._predict_residuals(sma_lookback_period)
@@ -136,7 +145,9 @@ class ForcastFactoryEnsemble(ForcastFactory):
 
         self._predicted_closing_prices = self._calculate_closing_prices()
 
-
+    ###############################################################
+    ########### MOST LIKELY HAVE TO FIX THIS HERE #################
+    ###############################################################
     def compare_predictions_with_observations(self) -> float:
         """
         Compare the model's predictions with the actual observed data.
@@ -157,22 +168,35 @@ class ForcastFactoryEnsemble(ForcastFactory):
         :rtype: float
         """
         self._validate_predictions(self._predicted_closing_prices)
-        self._validate_comparison_possibility()
 
-        self._get_observations_data()
+        actual_closing_prices = self._calculate_actual_closing_prices()
 
         mae = mean_absolute_error(
-            np.array(self._observed_closing_prices),
+            np.array(actual_closing_prices),
             np.array(self._predicted_closing_prices
                      [:len(self._observed_raw_data)]
                      )
             )
         
         return mae
+    
+    def _calculate_actual_closing_prices(self) -> list[float]:
+        """
+        Calculates the closing prices from the extrapolated SMA
+        and the predicted residuals.
 
-    ###############################################################
-    ########### MOST LIKELY HAVE TO FIX THIS HERE #################
-    ###############################################################
+        :return: a list of the predicted closing prices
+        :rtype: list[float]
+        """
+        return [
+            sum(x) 
+            for x in
+            zip(
+                self._actual_residuals,
+                self._actual_sma
+                )
+                ]
+
     def _predict_residuals(self, sma_lookback_period: int) -> None:
         """
         Used to predict the residuals. First it calculates the SMA
@@ -196,19 +220,15 @@ class ForcastFactoryEnsemble(ForcastFactory):
             self._sma
             )
 
-        preprocessed_residuals = self._preprocess_residuals()
+        test_data, test_labels = self._preprocess_residuals()
 
-        # Predict the residuals
         self._predicted_residuals = self._ensemble_model.\
-            predict_residuals(preprocessed_residuals, self._number_of_predictions)
+            predict_residuals(test_data)
+        
+        self._actual_residuals = test_labels
 
-
-    ###############################################################
-    ########### MOST LIKELY HAVE TO FIX THIS HERE #################
-    ###############################################################   
     def _extrapolate_sma(
-            self,
-            regression_window: int|None
+            self
             ) -> None:
         """
         Extrapolates the SMA using the DataFactory.
@@ -217,10 +237,40 @@ class ForcastFactoryEnsemble(ForcastFactory):
         Adviced to be left to None.
         :type regression_window: int | None
         """
-        sma_data = ...
+        sma_data = self._data_factory.get_sma(self._raw_data, 3)
+
+        processor = DataProcessor(sma_data, unpack=False)
+
+        sets = processor.generate_sets(10)
+
+        test_data, test_labels = processor.generate_labels(sets, 1)
 
         self._extrapolated_sma = self._ensemble_model.\
-            predict_sma(sma_data)#(--------args-------)
+            predict_sma(test_data)#(--------args-------)
+        
+        self._actual_sma = test_labels
+        
+    def _preprocess_residuals(self) -> tf.Tensor:
+        """
+        This method ensures that there are enough datapoints to fit
+        the input shape of the model. After that it reduces the number
+        of residuals to fit the input shape. Utilises tensorflow's
+        convert_to_tensor method to create a tensor in the right shape
+        for the prediciction method of the Model.
+
+        :raises ValueError: if the number of datapoints is smaller
+        than the input shape
+        :return: resiudals in the form of a tensor object ready to
+        be used as an input of a NN Model.
+        :rtype: tf.Tensor
+        """
+        processor = DataProcessor(self._residuals, unpack=False)
+
+        sets = processor.generate_sets(10)
+
+        test_data, test_labels = processor.generate_labels(sets, 1)
+        
+        return test_data, test_labels
 
     def plot_predictions(self) -> None:
         raise NotImplementedError("This is not implimented!")
