@@ -1,32 +1,24 @@
+import numpy as np
 from keras.src.layers import ReLU
-from tensorflow.keras.layers import Dense # type: ignore
-from tensorflow.keras.layers import LSTM # type: ignore
-from tensorflow.keras.models import Sequential # type: ignore
-from typing_extensions import override
+from tensorflow.keras.layers import Dense  # type: ignore
+from tensorflow.keras.layers import LSTM  # type: ignore
+from tensorflow.keras.models import Sequential  # type: ignore
 from network.network import Model
-from tensorflow.keras.optimizers import Adam # type: ignore
+from tensorflow.keras.optimizers import Adam  # type: ignore
 
-
-
-# TO DO:
-### Research:
-# ARIMA
-# What data format for the model -> normalization?
-# syntax (plotting & model)
-### Code:
-# begin Model class (template at network\network)
-## attribute model = None
-## method create_model...
-## method train -> returns loss/error (check template)
-## method fit
-## method predict -> returns loss/error
-## method plotting metrics -> RMSE
+from trend_model.model_factory import DataNormalizer
 
 
 class LstmModel(Model):
     """
-    The base class for all models.
+    The base class for LSTM models.
     """
+
+    def __init__(self):
+        super().__init__()
+        self.scaler = DataNormalizer()
+
+
     def create_sequential_model(
             self,
             architecture: list[int],
@@ -37,8 +29,9 @@ class LstmModel(Model):
         """
         Creates the model architecture and assigns it to the model attribute.
 
-        :param model_shape: Number of neurons in each layer.
-        :type model_shape: list[float]
+        :param architecture: Holds parameters look_back (0) - the number of data points the LSTM layer uses
+        for predictions and model_shape (1) - the number of neurons in the LSTM layer.
+        :type architecture: list[int]
         :param activations: Activation function for each layer.
         :type activations: list[str]
         :param input_shape: Number of data points used for input.
@@ -57,3 +50,60 @@ class LstmModel(Model):
         ])
 
         self.model = model
+
+    def trainModel(
+            self,
+            training_data: np.ndarray,
+            training_labels: np.ndarray,
+            validation_data: np.ndarray,
+            validation_labels: np.ndarray,
+            epochs: int,
+            batch_size: int
+    ) -> None:
+        """
+        Trains the model using specified training and validation data.
+
+        :param training_data: Data for training, matching the input shape of
+        the model.
+        :type training_data: np.ndarray
+        :param training_labels: Labels for training data, matching the output
+        shape of the model.
+        :type training_labels: np.ndarray
+        :param validation_data: Data for validation during training to prevent
+        overfitting.
+        :type validation_data: np.ndarray
+        :param validation_labels: Labels for validation data.
+        :type validation_labels: np.ndarray
+        :param epochs: Number of training iterations.
+        :type epochs: int
+        :param batch_size: Data points per batch, the number processed before
+        updating weights.
+        :type batch_size: int
+        """
+
+        data = [training_data, training_labels,
+                validation_data, validation_labels]
+
+        data = [self.scaler.scale_data(dt) for dt in data]
+
+        return super().trainModel(data[0], data[1], data[2], data[3], epochs, batch_size)
+
+    def predict(
+            self,
+            data: np.ndarray
+    ) -> np.ndarray:
+        """
+        Makes a prediction on the specified data using the trained model
+
+        :param data: the data you want to predict
+        :type data: np.ndarray
+        :return: the predictions
+        :type return: np.ndarray
+        """
+        x_test = data
+        x_test = self.scaler.scale_data(x_test)
+
+        predictions = super().predict(x_test)
+
+        y_predictions = self.scaler.inverse_scaled_data(predictions)
+        return y_predictions
