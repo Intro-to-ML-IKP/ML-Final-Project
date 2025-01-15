@@ -24,7 +24,7 @@ def run():
 
     lstm = LstmModel()
 
-    lstm.create_sequential_model(9, 20, training_data.shape, training_labels.shape[0])
+    lstm.create_sequential_model([9, 20], None, training_data[0].shape[0], training_labels[0].shape[0])
 
     lstm.compileModel(0.001, "mean_squared_error", metrics=["mae"])
 
@@ -33,9 +33,11 @@ def run():
     datasets = [scaler.scale_data(data) for data in initial_datasets]
 
     x_train = datasets[0]
-    y_train= datasets[3]
+    y_train = datasets[3]
+
     x_val = datasets[1]
     y_val = datasets[4]
+
     x_test = datasets[2]
     y_test = datasets[5]
 
@@ -47,11 +49,12 @@ def run():
 
     y_scaled_predictions = lstm.predict(x_test)
     y_predictions = scaler.inverse_scaled_data(y_scaled_predictions)
+    print(x_test)
+    print(y_test)
+    print(y_predictions)
 
-    print(y_predictions.shape)
-
-    rmse = math.sqrt(mean_squared_error(testing_labels, y_predictions))
-    print('Train Score: %.2f RMSE' % (rmse))
+    mse = mean_squared_error(y_test, y_predictions)
+    print('Train Score: %.2f MSE' % (mse))
 
 
 class DataNormalizer:
