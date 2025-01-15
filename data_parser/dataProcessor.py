@@ -14,6 +14,7 @@ class DataProcessor:
     def __init__(
             self,
             data: list[tuple[str,float,float,float,float]]|None,
+            unpack: bool = True
             ) -> None:
         """
         A way of instantating a proccessor object for stock data.
@@ -25,8 +26,10 @@ class DataProcessor:
         """
         self._dates = None
         self._data: list[tuple[float, float, float, float]] = None
-        if data is not None:
+        if data is not None and unpack is True:
             self._unpack_data(data)
+        else:
+            self._data = data
     
     @property
     def data(self) -> tuple[float,float,float,float]:
