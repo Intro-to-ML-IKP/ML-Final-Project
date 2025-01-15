@@ -206,7 +206,7 @@ class Model:
 
     def load_model(
             self,
-            stockName: str
+            filepath: str
     ) -> None:
         """
         Loads a model from the models folder.
@@ -217,11 +217,11 @@ class Model:
         If the file doesn't exists it will raise an exception.
         """
         try:
-            self.model = keras.models. \
-                load_model(f"models/{stockName}_model.keras")
+            self.model = keras.models.load_model(filepath)
+            model_name = filepath.split("\\")[-1]
+            print(f"Model {model_name} loaded successfully!")
         except FileExistsError(
-                f"No such Model named '{stockName}_model.keras'"
-                "exists in the 'models' folder!"
+                f"No such Model at dir '{filepath}' exists!"
         ) as e:
             raise e
 
