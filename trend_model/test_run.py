@@ -22,8 +22,11 @@ def run():
 
     lstm.compileModel(0.001, "mean_squared_error", metrics=["mae"])
 
-    scaled_training_data = scale_data(training_data)
-    scaled_validation_data = scale_data(validation_data)
+
+    min_max_scaler = preprocessing.MinMaxScaler(feature_range=(0, 1))
+
+    scaled_training_data = scale_data(training_data, min_max_scaler)
+    scaled_validation_data = scale_data(validation_data, min_max_scaler)
     
     print("scaled_training_data shape ",scaled_training_data.shape)
     print("scaled_validation_data shape ",scaled_validation_data.shape)
@@ -35,6 +38,20 @@ def run():
     print("validation_labels shape ",validation_labels.shape)
 
     lstm.trainModel(x_train, training_labels, x_val, validation_labels, epochs=20, batch_size=15)
+    scaled_testing_data = scale_data(testing_data, min_max_scaler)
+    y_test = reshape_input(scaled_testing_data)
+    # scaled_testing_labels = scale_data(testing_labels)
+
+    y_scaled_predictions = lstm.predict(y_test)
+    print("y_scaled_predictions shape ",y_scaled_predictions.shape)
+    print(testing_labels.shape)
+    print(y_predictions.shape)
+    y_predictions = min_max_scaler.inverse_transform(y_scaled_predictions)
+   
+    rmse = math.sqrt(mean_squared_error(testing_labels, y_predictions))
+    print('Train Score: %.2f RMSE' % (rmse)) 
+
+
 
 
 def reshape_input(input_data) -> np.ndarray:
@@ -42,9 +59,8 @@ def reshape_input(input_data) -> np.ndarray:
     return x
 
 
-def scale_data(data) -> tuple:
+def scale_data(data, min_max_scaler) -> tuple:
     # Scaling data
-    min_max_scaler = preprocessing.MinMaxScaler(feature_range=(0, 1))
     #for row in range(len(data)):
     scaled_data = min_max_scaler.fit_transform(data) # .reshape(-1, 1)
     # scaled_validation_data = min_max_scaler.fit_transform(validation_data.values.reshape(-1, 1))
