@@ -379,7 +379,7 @@ def plot_data(
     plot_stocks = PlotStocks(raw_data)
     plot_stocks.plot_candlestick()
 
-def plot_train_val_losses(filename: str, folder: str):
+def plot_train_val_losses(filename: str, folder: str, id: int|None = None):
     import os
     import pickle
     import matplotlib.pyplot as plt
@@ -419,69 +419,89 @@ def plot_train_val_losses(filename: str, folder: str):
             validation_loss_data_ = pickle.load(file)
     validation_loss_data = [tup[1] for tup in validation_loss_data_]
 
-    # Determine the median length of all sequences
-    all_lengths = [len(seq) for seq in (training_loss_data + validation_loss_data)]
-    median_length = int(np.median(all_lengths))
+    if id is not None:
+        for count in range(len(training_loss_data_)):
+            training_id, training_loss = training_loss_data_[count]
+            validation_id, validation_loss = validation_loss_data_[count]
 
-    min_val_loss = 10
-    min_val_loss_index = 0
-    for index, dat in enumerate(validation_loss_data):
-        dat_min = np.array(dat).min()
-        if dat_min < min_val_loss:
-            min_val_loss = dat_min
-            min_val_loss_index = index
+            if training_id == id:
+                training_loss_data = training_loss
 
-    biggests_sigma_val_loss = validation_loss_data[min_val_loss_index]
-    biggests_sigma_train_loss = training_loss_data[min_val_loss_index]
+            if validation_id == id:
+                validation_loss_data = validation_loss
+            
+    if id is not None:
+        plt.plot(validation_loss_data, label='Validation Loss', color='red')
+        plt.plot(training_loss_data, label="Trainign Loss", color="blue")
 
-    for index in range(len(validation_loss_data)):
-        plt.plot(validation_loss_data[index], label='Validation Loss', color='red')
-        plt.plot(training_loss_data[index], label="Trainign Loss", color="blue")
-    plt.show()
-    # Adjust sequences to the median length
-    training_loss_data = adjust_to_median_length(training_loss_data, median_length)
-    validation_loss_data = adjust_to_median_length(validation_loss_data, median_length)
+        # Labels and title
+        plt.title(f'Training and Validation Loss of model id: {id}')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
+        plt.show()
+
+    else:
+        # Determine the median length of all sequences
+        all_lengths = [len(seq) for seq in (training_loss_data + validation_loss_data)]
+        median_length = int(np.median(all_lengths))
+
+        min_val_loss = 10
+        min_val_loss_index = 0
+        for index, dat in enumerate(validation_loss_data):
+            dat_min = np.array(dat).min()
+            if dat_min < min_val_loss:
+                min_val_loss = dat_min
+                min_val_loss_index = index
+
+        biggests_sigma_val_loss = validation_loss_data[min_val_loss_index]
+        biggests_sigma_train_loss = training_loss_data[min_val_loss_index]
+
+        for index in range(len(validation_loss_data)):
+            plt.plot(validation_loss_data[index], label='Validation Loss', color='red')
+            plt.plot(training_loss_data[index], label="Trainign Loss", color="blue")
+        plt.show()
+        # Adjust sequences to the median length
+        training_loss_data = adjust_to_median_length(training_loss_data, median_length)
+        validation_loss_data = adjust_to_median_length(validation_loss_data, median_length)
 
 
-    # Calculate average and standard deviation
-    avg_train_loss = np.mean(training_loss_data, axis=0)
-    avg_val_loss = np.mean(validation_loss_data, axis=0)
-    std_train_loss = np.std(training_loss_data, axis=0)
-    std_val_loss = np.std(validation_loss_data, axis=0)
+        # Calculate average and standard deviation
+        avg_train_loss = np.mean(training_loss_data, axis=0)
+        avg_val_loss = np.mean(validation_loss_data, axis=0)
+        std_train_loss = np.std(training_loss_data, axis=0)
+        std_val_loss = np.std(validation_loss_data, axis=0)
 
-    # Plotting
-    epochs = range(1, median_length + 1)
-    plt.figure(figsize=(10, 6))
+        # Plotting
+        epochs = range(1, median_length + 1)
+        plt.figure(figsize=(10, 6))
 
-    # Plot the average training and validation loss
-    plt.plot(epochs, avg_train_loss, label='Average Training Loss', color='blue')
-    plt.plot(epochs, avg_val_loss, label='Average Validation Loss', color='red')
+        # Plot the average training and validation loss
+        plt.plot(epochs, avg_train_loss, label='Average Training Loss', color='blue')
+        plt.plot(epochs, avg_val_loss, label='Average Validation Loss', color='red')
 
-    plt.plot(biggests_sigma_train_loss, label="Best performance training loss", color="green")
-    plt.plot(biggests_sigma_val_loss, label="Best performance validation loss", color="yellow")
+        plt.plot(biggests_sigma_train_loss, label="Best performance training loss", color="green")
+        plt.plot(biggests_sigma_val_loss, label="Best performance validation loss", color="yellow")
 
-    # Add shaded areas for the variance (standard deviation)
-    plt.fill_between(epochs, avg_train_loss - std_train_loss, avg_train_loss + std_train_loss, color='blue', alpha=0.2)
-    plt.fill_between(epochs, avg_val_loss - std_val_loss, avg_val_loss + std_val_loss, color='red', alpha=0.2)
+        # Add shaded areas for the variance (standard deviation)
+        plt.fill_between(epochs, avg_train_loss - std_train_loss, avg_train_loss + std_train_loss, color='blue', alpha=0.2)
+        plt.fill_between(epochs, avg_val_loss - std_val_loss, avg_val_loss + std_val_loss, color='red', alpha=0.2)
 
-    # Add a vertical line at the median length
-    #plt.axvline(x=median_length, color='green', linestyle='--', label=f'Median Length ({median_length})')
+        # Add a vertical line at the median length
+        #plt.axvline(x=median_length, color='green', linestyle='--', label=f'Median Length ({median_length})')
 
-    # Labels and title
-    plt.title('Average Training and Validation Loss with Variance')
-    plt.xlabel('Epochs')
-    plt.ylabel('Loss')
-    plt.legend()
+        # Labels and title
+        plt.title('Average Training and Validation Loss with Variance')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.legend()
 
-    # Show the plot
-    plt.show()
+        # Show the plot
+        plt.show()
 
 
 if __name__ == "__main__":
     #forcast_closing_prices()
-    #explore_different_architectures("AAPL", "best_nn_early_stoppage", "best_nn_stoppage", maxEpochs=100)
-    #plot_train_val_losses("best_nn_early_stoppage", "best_nn_stoppage")
-    #perform_statistical_analysis("best_nn_early_stoppage", "best_nn_stoppage")
-    from trend_model.test_run import run
-
-    run()
+    #explore_different_architectures("AAPL", "best_nn_early_stoppage_and_l2", "best_nn_stoppage_and_l2", maxEpochs=100)
+    #plot_train_val_losses("best_nn_early_stoppage", "best_nn_stoppage", id=145)
+    perform_statistical_analysis("best_nn_early_stoppage", "best_nn_stoppage")
