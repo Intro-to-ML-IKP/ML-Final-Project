@@ -143,6 +143,9 @@ class ResultsHandler:
         """
         df = self._df
 
+        # Drop the id column
+        df = df.drop(columns=["id"])
+
         # Calculate the correlation matrix
         correlation_matrix = df.corr()
 
@@ -174,6 +177,9 @@ class ResultsHandler:
         :return type: pd.DataFrame
         """
         df = self._df
+
+        # Drop the id column
+        df = df.drop(columns=["id"])
 
         # Prepare the data
         param_space = df[
@@ -262,8 +268,13 @@ class ResultsHandler:
         Create a scatterplot matrix using seaborn's pairplot.
         Using fill=True to avoid the deprecated shade warning
         """
+        df = self._df
+
+        # Drop the id column
+        df = df.drop(columns=["id"])
+
         sns.pairplot(
-            self._df,
+            df,
             diag_kind='kde',              # Diagonal kind: 'kde' for KDE plots
             markers='o',
             height=2.5,
@@ -281,8 +292,13 @@ class ResultsHandler:
         """
         Creates a correlation heatmap and plots it.
         """
+        df = self._df
+
+        # Drop the id column
+        df = df.drop(columns=["id"])
+
         # Compute the correlation matrix
-        corr_matrix = self._df.corr()
+        corr_matrix = df.corr()
 
         # Set the figure size for better visibility
         plt.figure(figsize=(10, 8))
