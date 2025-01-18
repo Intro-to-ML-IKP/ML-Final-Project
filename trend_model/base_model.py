@@ -39,10 +39,9 @@ class LstmModel(Model):
         :param output_size: Number of neurons in the output layer.
         :type output_size: int
         """
-        look_back = architecture[0]
-        model_shape = architecture[1]
+        look_back = int(architecture[0])
+        model_shape = int(architecture[1])
 
-        print(input_shape)
         model = Sequential([
             LSTM(units=model_shape, input_shape=(input_shape, look_back)),
             ReLU(),

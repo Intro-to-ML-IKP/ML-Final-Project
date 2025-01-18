@@ -32,7 +32,8 @@ def explore_different_architectures(
         validationPercentage: float = 0.1,
         maxEpochs: int = 50,
         save_param_list: bool = False,
-        lstm: bool = False
+        lstm: bool = False,
+        save_model: bool = False
         ) -> dict:
     """
     Explores different neural network architectures for a specified stock 
@@ -123,6 +124,7 @@ def explore_different_architectures(
     # Get the parameter list
     paramList = pConst.getParamList()
 
+    #paramList = [tuple(([9, 20], 0.0050, 5)) for _ in range(100)]
     #paramList = [tuple(([10,8], 0.0050, 5)) for _ in range(200)]
 
     if save_param_list:
@@ -187,7 +189,8 @@ def explore_different_architectures(
         testing_labels,
         paramList,
         results_filename,
-        results_foldername
+        results_foldername,
+        save_model
         )
     
     # Get the sorted results from the exploration as dictionary
@@ -631,6 +634,9 @@ def plot_train_val_losses(filename: str, folder: str, id: int|None = None):
 
 if __name__ == "__main__":
     #test_ensemble_model()
-    explore_different_architectures("AAPL", "best_nn_early_stoppage_and_l2", "best_nn_stoppage_and_l2", maxEpochs=100)
-    #plot_train_val_losses("best_nn_early_stoppage", "best_nn_stoppage", id=145)
-    #perform_statistical_analysis("best_nn_early_stoppage", "best_nn_stoppage")
+    #explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100)
+    explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100, lstm=True, minNeurons=9, maxNeurons=81, dNeurons=3)
+    #plot_train_val_losses("lstm_test", "lstm_test")
+    #perform_statistical_analysis("lstm_test", "lstm_test")
+    #from trend_model.test_run import run
+    #run()
