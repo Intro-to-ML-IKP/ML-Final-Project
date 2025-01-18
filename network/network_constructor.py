@@ -220,7 +220,8 @@ class NetworksConstructor:
         testing_labels: list[float],
         paramList: list[tuple[list[int], float, int]],
         results_filename: str,
-        results_foldername: str
+        results_foldername: str,
+        save_model: bool,
         ) -> None:
         """
         Generates a list of parameter sets to train different network models.
@@ -285,7 +286,8 @@ class NetworksConstructor:
             self._validation_loss.append(validation_loss)
             self._training_loss.append(training_loss)
             self._results.append(result)
-            model.save_model("early_stoppage", f"AAPL_{count}")
+            if save_model:
+                model.save_model("early_stoppage", f"AAPL_{count}")
             
 class NetworksDict:
     def sort_results_list(self, result_list):
