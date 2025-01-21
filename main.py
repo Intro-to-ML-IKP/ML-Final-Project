@@ -637,7 +637,7 @@ if __name__ == "__main__":
     #test_ensemble_model()
     #explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100)
     #explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100, lstm=True, minNeurons=9, maxNeurons=81, dNeurons=3)
-    #plot_train_val_losses("lstm_test_wo_early_stop", "lstm_test_wo_early_stop")
-    perform_statistical_analysis("lstm_test", "lstm_test", lstm=True)
+    plot_train_val_losses("training_best_lstm", "training_best_lstm", id = 115)
+    #perform_statistical_analysis("training_best_lstm", "training_best_lstm", lstm=True)
     #from trend_model.test_run import run
     #run()
