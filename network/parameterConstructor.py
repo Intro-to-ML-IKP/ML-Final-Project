@@ -162,7 +162,7 @@ class ParameterConstructorLSTM(ParameterConstructor):
             )      # Possible amounts of neurons per layer
         
         self._architectures = [
-                [random.randint(1, 9), neuronCount]
+                [9, neuronCount]
                 for neuronCount in neuronCountList
                 for _ in range(maxLayers)
             ]     # Creates a 1D list of all possible neuron counts over all layers

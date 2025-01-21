@@ -635,8 +635,8 @@ def plot_train_val_losses(filename: str, folder: str, id: int|None = None):
 if __name__ == "__main__":
     #test_ensemble_model()
     #explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100)
-    explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100, lstm=True, minNeurons=9, maxNeurons=81, dNeurons=3)
-    #plot_train_val_losses("lstm_test", "lstm_test")
+    #explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100, lstm=True, minNeurons=9, maxNeurons=81, dNeurons=3)
+    plot_train_val_losses("lstm_test", "lstm_test")
     #perform_statistical_analysis("lstm_test", "lstm_test")
     #from trend_model.test_run import run
     #run()
