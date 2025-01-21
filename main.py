@@ -431,9 +431,9 @@ def test_ensemble_model(
     forcaster = ForcastFactoryEnsemble(
         stock_name=stock_name,
         residual_model="AAPL_145_model.keras",
-        residual_model_folder="early_stoppage",
+        residual_model_folder="residual_model",
         trend_model="test",
-        trend_model_folder="test",
+        trend_model_folder="trend_model",
         datafactory_param_dict=datafactory_parameters
         )
 
@@ -447,7 +447,7 @@ def test_ensemble_model(
         interval
         )
 
-def perform_statistical_analysis(filename: str, foldername: str) -> None:
+def perform_statistical_analysis(filename: str, foldername: str, lstm: bool = False) -> None:
     """
     Performs statistical analysis on the results stored in a specified 
     file and folder. This includes calculating correlation coefficients, 
@@ -461,7 +461,7 @@ def perform_statistical_analysis(filename: str, foldername: str) -> None:
     :type foldername: str
     """
     # Load the results
-    results = ResultsHandler(mae=False)
+    results = ResultsHandler(mae=False, lstm=lstm)
     results.load_results(filename, foldername)
     print(len(results.results))
 
@@ -491,10 +491,11 @@ def perform_statistical_analysis(filename: str, foldername: str) -> None:
     # Create a correlation heatmap
     results.create_correlation_heatmap()
 
-    # Get the parameter's ranges
-    print_nice_title(par_ranges)
-    param_ranges = results.get_parmeter_ranges()
-    print(param_ranges)
+    if lstm is False:
+        # Get the parameter's ranges
+        print_nice_title(par_ranges)
+        param_ranges = results.get_parmeter_ranges()
+        print(param_ranges)
 
     # Get the top 5 NNs
     print_nice_title(top_5_networks)
@@ -635,8 +636,8 @@ def plot_train_val_losses(filename: str, folder: str, id: int|None = None):
 if __name__ == "__main__":
     #test_ensemble_model()
     #explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100)
-    explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100, lstm=True, minNeurons=9, maxNeurons=81, dNeurons=3)
-    #plot_train_val_losses("lstm_test", "lstm_test")
-    #perform_statistical_analysis("lstm_test", "lstm_test")
+    #explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100, lstm=True, minNeurons=9, maxNeurons=81, dNeurons=3)
+    #plot_train_val_losses("lstm_test_wo_early_stop", "lstm_test_wo_early_stop")
+    perform_statistical_analysis("lstm_test", "lstm_test", lstm=True)
     #from trend_model.test_run import run
     #run()

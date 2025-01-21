@@ -32,11 +32,8 @@ class EnsembleModel:
     def predict_residuals(self, data_sets: list[list[float]]):
         all_predictions = []
         for dat in data_sets:
-            residuals_tensor = tf.convert_to_tensor(dat)
-            residuals_tensor = tf.reshape(
-                residuals_tensor,
-                (-1, 9)
-                )
+            residuals_tensor = np.array(dat)
+    
             prediction = self._residual_model.predict(residuals_tensor)
 
             all_predictions.append(prediction)
@@ -46,12 +43,9 @@ class EnsembleModel:
     def predict_sma(self, data_sets: list[list[float]]):#(--------args--------)
         all_predictions = []
         for dat in data_sets:
-            residuals_tensor = tf.convert_to_tensor(dat)
-            residuals_tensor = tf.reshape(
-                residuals_tensor,
-                (-1, 9)
-                )
-            prediction = self._residual_model.predict(residuals_tensor)
+            sma_array = np.array(dat)
+        
+            prediction = self._residual_model.predict(sma_array)
 
             all_predictions.append(prediction)
 

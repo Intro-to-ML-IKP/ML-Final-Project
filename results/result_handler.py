@@ -15,7 +15,8 @@ class ResultsHandler:
     """
     This class is used to handle saving and loading of results.
     """
-    def __init__(self, results: dict|list[list[float]]|None = None, mae: bool = True) -> None:
+    def __init__(self, results: dict|list[list[float]]|None = None, mae: bool = True, lstm: bool = False) -> None:
+        self._lstm_results = lstm
         self._results = results
         if mae:
             self._df = self._generate_pd_dataframe()
@@ -43,7 +44,14 @@ class ResultsHandler:
         for the different networks
         :rtype: dict
         """
-        return self._df
+        df = self._df
+
+        if self._lstm_results:
+            df = df.drop(columns="Neurons Layer 1")
+            df = df.drop(columns="Number of Layers")
+            df["Number of neurons"] = df.pop("Neurons Layer 2")
+
+        return df
 
     def save_results(
             self,
@@ -146,6 +154,11 @@ class ResultsHandler:
         # Drop the id column
         df = df.drop(columns=["id"])
 
+        if self._lstm_results:
+            df = df.drop(columns="Neurons Layer 1")
+            df = df.drop(columns="Number of Layers")
+            df["Number of neurons"] = df.pop("Neurons Layer 2")
+
         # Calculate the correlation matrix
         correlation_matrix = df.corr()
 
@@ -181,16 +194,30 @@ class ResultsHandler:
         # Drop the id column
         df = df.drop(columns=["id"])
 
-        # Prepare the data
-        param_space = df[
-            [
-                "Neurons Layer 1",
-                "Neurons Layer 2",
-                "Learning Rate",
-                "Batch Size",
-                "Number of Layers"
-                ]
-            ]  # Features
+        if self._lstm_results:
+            df = df.drop(columns="Neurons Layer 1")
+            df = df.drop(columns="Number of Layers")
+            df["Number of neurons"] = df.pop("Neurons Layer 2")
+
+            # Prepare the data        
+            param_space = df[
+                [
+                    "Number of neurons",
+                    "Learning Rate",
+                    "Batch Size",
+                    ]
+                ]  # Features
+        else:
+            param_space = df[
+                [
+                    "Neurons Layer 1",
+                    "Neurons Layer 2",
+                    "Learning Rate",
+                    "Batch Size",
+                    "Number of Layers"
+                    ]
+                ]  # Features
+
         
         target_param = df["MAES"]  # Target
 
@@ -273,6 +300,11 @@ class ResultsHandler:
         # Drop the id column
         df = df.drop(columns=["id"])
 
+        if self._lstm_results:
+            df = df.drop(columns="Neurons Layer 1")
+            df = df.drop(columns="Number of Layers")
+            df["Number of neurons"] = df.pop("Neurons Layer 2")
+
         sns.pairplot(
             df,
             diag_kind='kde',              # Diagonal kind: 'kde' for KDE plots
@@ -296,6 +328,11 @@ class ResultsHandler:
 
         # Drop the id column
         df = df.drop(columns=["id"])
+
+        if self._lstm_results:
+            df = df.drop(columns="Neurons Layer 1")
+            df = df.drop(columns="Number of Layers")
+            df["Number of neurons"] = df.pop("Neurons Layer 2")
 
         # Compute the correlation matrix
         corr_matrix = df.corr()
