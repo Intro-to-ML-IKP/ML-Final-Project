@@ -140,7 +140,7 @@ class ForcastFactoryEnsemble(ForcastFactory):
 
         self._predict_residuals(sma_lookback_period)
 
-        self._extrapolate_sma(regression_window)
+        self._extrapolate_sma()
 
         self._predicted_closing_prices = self._calculate_closing_prices()
 
@@ -170,11 +170,10 @@ class ForcastFactoryEnsemble(ForcastFactory):
 
         actual_closing_prices = self._calculate_actual_closing_prices()
 
+        predicted_closing_prices = [float(x) for x in self._predicted_closing_prices]
         mae = mean_absolute_error(
             np.array(actual_closing_prices),
-            np.array(self._predicted_closing_prices
-                     [:len(self._observed_raw_data)]
-                     )
+            np.array(predicted_closing_prices)
             )
         
         return mae
@@ -187,14 +186,7 @@ class ForcastFactoryEnsemble(ForcastFactory):
         :return: a list of the predicted closing prices
         :rtype: list[float]
         """
-        return [
-            sum(x) 
-            for x in
-            zip(
-                self._actual_residuals,
-                self._actual_sma
-                )
-                ]
+        return [round(sum(x+y),2) for x, y in zip(self._actual_residuals,self._actual_sma)]
 
     def _predict_residuals(self, sma_lookback_period: int) -> None:
         """

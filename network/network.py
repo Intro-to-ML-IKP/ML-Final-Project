@@ -163,6 +163,9 @@ class Model:
         """
         predictions = self.predict(testing_data)
         mae = mean_absolute_error(testing_labels, predictions)
+        print(testing_data)
+        print(predictions)
+        print(testing_labels)
         return mae
 
     def model_summary(self) -> Any:

@@ -124,7 +124,7 @@ def explore_different_architectures(
     # Get the parameter list
     paramList = pConst.getParamList()
 
-    #paramList = [tuple(([9, 20], 0.0050, 5)) for _ in range(100)]
+    paramList = [tuple(([9, 20], 0.0050, 5))]
     #paramList = [tuple(([10,8], 0.0050, 5)) for _ in range(200)]
 
     if save_param_list:
@@ -192,7 +192,7 @@ def explore_different_architectures(
         results_foldername,
         save_model
         )
-    
+    return
     # Get the sorted results from the exploration as dictionary
     sorted_results = NetworksDict().sort_results_list(netConst.results)
 
@@ -432,20 +432,23 @@ def test_ensemble_model(
         stock_name=stock_name,
         residual_model="AAPL_145_model.keras",
         residual_model_folder="residual_model",
-        trend_model="test",
+        trend_model="AAPL_115_model.keras",
         trend_model_folder="trend_model",
         datafactory_param_dict=datafactory_parameters
         )
 
     # Make the forecast
     forcaster.predict(
-        number_of_predictions,
         raw_data_amount,
         sma_lookback_period,
         regression_window,
         end_date,
         interval
         )
+    
+    mae = forcaster.compare_predictions_with_observations()
+
+    print(mae)
 
 def perform_statistical_analysis(filename: str, foldername: str, lstm: bool = False) -> None:
     """
@@ -634,10 +637,10 @@ def plot_train_val_losses(filename: str, folder: str, id: int|None = None):
 
 
 if __name__ == "__main__":
-    #test_ensemble_model()
+    test_ensemble_model()
     #explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100)
     #explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100, lstm=True, minNeurons=9, maxNeurons=81, dNeurons=3)
-    plot_train_val_losses("training_best_lstm", "training_best_lstm", id = 115)
+    #plot_train_val_losses("training_best_lstm", "training_best_lstm", id = 115)
     #perform_statistical_analysis("training_best_lstm", "training_best_lstm", lstm=True)
     #from trend_model.test_run import run
     #run()
