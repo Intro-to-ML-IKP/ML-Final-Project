@@ -108,7 +108,6 @@ class ForcastFactoryEnsemble(ForcastFactory):
 
     def predict(
             self,
-            number_of_predictions: int,
             raw_data_amount: int = 50,
             sma_lookback_period: int = 3,
             regression_window: int|None = None,
