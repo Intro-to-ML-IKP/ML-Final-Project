@@ -5,7 +5,7 @@ import random
 class ParameterConstructor:
     """
     This class serves to generate permutations of different parameter
-    combinations based on user input.
+    combinations based on user input for MLP.
     """
     @property
     def paramList(self):
@@ -133,7 +133,7 @@ class ParameterConstructor:
 class ParameterConstructorLSTM(ParameterConstructor):
     """
     This class serves to generate permutations of different parameter
-    combinations based on user input.
+    combinations based on user input for LSTM network.
     """
     def calcNetworkArchitectures(
         self, 

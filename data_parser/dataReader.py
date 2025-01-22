@@ -200,7 +200,14 @@ class DataReader:
             self.getData(number_of_points, 100)
             self.getLabels(number_of_points, label_size)
 
-    def _validate_date(self, date):
+    def _validate_date(self, date: str) -> None:
+        """
+        Validates the date.
+
+        :param date: the date
+        :type date: str
+        :raises TypeError: wrong date format
+        """
         if not isinstance(date, str):
             raise TypeError(
                 "You must provide type=`str` as date in the form:"

@@ -1,3 +1,8 @@
+import os
+import pickle
+import matplotlib.pyplot as plt
+import numpy as np
+
 from utils import print_nice_title # type: ignore
 from network.parameterConstructor import ParameterConstructor, ParameterConstructorLSTM
 from network.network_constructor import NetworksConstructor, NetworksDict
@@ -346,10 +351,8 @@ def forcast_closing_prices(
 
 def test_ensemble_model(
         stock_name: str = "AAPL",
-        number_of_predictions: int = 5,
         raw_data_amount: int = 90,
         sma_lookback_period: int = 3,
-        regression_window: int | None = None,
         end_date: str = "2025-01-15",
         interval: str = "1d",
         points_per_set: int = 10,
@@ -357,63 +360,32 @@ def test_ensemble_model(
         labels_per_set: int = 1,
         training_percentage: float = 0.8,
         validation_percentage: float = 0.1
-        ) -> tuple[list[float], float]:
+        ):
     """
-    Forecasts closing prices for a specified stock using a neural network 
-    model. Generates data, trains the model, and plots predictions 
-    against observed values.
+    Tests the Ensemble Model.
 
-    :param stock_name: Name of the stock to forecast.
-    :type stock_name: str
-    :param number_of_predictions: Number of closing price predictions to 
-        generate.
-    :type number_of_predictions: int
-    :param raw_data_amount: Amount of raw historical data to retrieve. 
-        Default is 50.
-    :type raw_data_amount: int
-    :param sma_lookback_period: Lookback period for calculating the Simple 
-        Moving Average (SMA). Default is 3.
-    :type sma_lookback_period: int
-    :param regression_window: Optional window size for regression. 
-        Default is None.
-    :type regression_window: int or None
-    :param end_date: End date for historical data retrieval in "YYYY-MM-DD" 
-        format. Default is "2024-09-01".
-    :type end_date: str
-    :param interval: Interval for data points, e.g., "1d" for daily. 
-        Default is "1d".
-    :type interval: str
-    :param architecture: List specifying the number of neurons in each 
-        network layer. Default is [13, 24].
-    :type architecture: list[int]
-    :param learning_rate: Learning rate for model training. Default is 0.01.
-    :type learning_rate: float
-    :param loss_function: Loss function for model training, e.g., "mse" 
-        (Mean Squared Error). Default is "mse".
-    :type loss_function: str
-    :param metrics: List of metrics to monitor during training, e.g., ["mae"].
-    :type metrics: list[str]
-    :param epochs: Number of epochs for training the model. Default is 50.
-    :type epochs: int
-    :param batch_size: Batch size for model training. Default is 5.
-    :type batch_size: int
-    :param points_per_set: Number of data points per set in the training data. 
-        Default is 10.
-    :type points_per_set: int
-    :param num_sets: Number of sets of data to generate. Default is 50.
-    :type num_sets: int
-    :param labels_per_set: Number of labels per data set. Default is 1.
-    :type labels_per_set: int
-    :param training_percentage: Percentage of data used for testing. 
-        Default is 0.8.
-    :type training_percentage: float
-    :param validation_percentage: Percentage of data used for validation. 
-        Default is 0.1.
-    :type validation_percentage: float
-
-    :return: A tuple containing the list of predicted closing prices and 
-        the Mean Squared Error (MSE) between predictions and actual values.
-    :rtype: tuple[list[float], float]
+    :param stock_name: the stock code, defaults to "AAPL"
+    :type stock_name: str, optional
+    :param raw_data_amount: the amount of raw data to retrieve,
+    defaults to 90
+    :type raw_data_amount: int, optional
+    :param sma_lookback_period: the lookback time for the SMA,
+    defaults to 3
+    :type sma_lookback_period: int, optional
+    :param end_date: the end date, defaults to "2025-01-15"
+    :type end_date: str, optional
+    :param interval: the candlestick interval, defaults to "1d"
+    :type interval: str, optional
+    :param points_per_set: points per set, defaults to 10
+    :type points_per_set: int, optional
+    :param num_sets: number of sets, defaults to 50
+    :type num_sets: int, optional
+    :param labels_per_set: labels per set, defaults to 1
+    :type labels_per_set: int, optional
+    :param training_percentage: trainign percentage, defaults to 0.8
+    :type training_percentage: float, optional
+    :param validation_percentage: validation percentage, defaults to 0.1
+    :type validation_percentage: float, optional
     """
     # Create a forecast factory initializer
     param_getter = ForcastFactoryInitializer()
@@ -441,14 +413,13 @@ def test_ensemble_model(
     forcaster.predict(
         raw_data_amount,
         sma_lookback_period,
-        regression_window,
         end_date,
         interval
         )
     
+    # Calculates the Mean Absolute Error of the model
     mae = forcaster.compare_predictions_with_observations()
-
-    print(mae)
+    print(round(mae,2))
 
 def perform_statistical_analysis(filename: str, foldername: str, lstm: bool = False) -> None:
     """
@@ -516,11 +487,17 @@ def plot_data(
     plot_stocks.plot_candlestick()
 
 def plot_train_val_losses(filename: str, folder: str, id: int|None = None):
-    import os
-    import pickle
-    import matplotlib.pyplot as plt
-    import numpy as np
+    """
+    Plots the train-validation loss curves.
 
+    :param filename: the filename used for saving.
+    :type filename: str
+    :param folder: the folder user to save the files.
+    :type folder: str
+    :param id: if specified plots only the train-val curve of the model
+    with the provided id, defaults to None
+    :type id: int | None, optional
+    """
     def adjust_to_median_length(data, median_length):
         """
         Adjusts all sequences in the data to the median length:
@@ -544,17 +521,19 @@ def plot_train_val_losses(filename: str, folder: str, id: int|None = None):
     filename_train = f"results\\{folder}\\{filename}_training_loss"
     filename_val = f"results\\{folder}\\{filename}_validation_loss"
 
-    # Load the data from the files
+    # Load the training data from the files
     if os.path.exists(filename_train):
         with open(filename_train, "rb") as file:
             training_loss_data_ = pickle.load(file)
     training_loss_data = [tup[1] for tup in training_loss_data_]
 
+    # Load the validation data from the files
     if os.path.exists(filename_val):
         with open(filename_val, "rb") as file:
             validation_loss_data_ = pickle.load(file)
     validation_loss_data = [tup[1] for tup in validation_loss_data_]
 
+    # Finds the train-val curve of the given id if not None
     if id is not None:
         for count in range(len(training_loss_data_)):
             training_id, training_loss = training_loss_data_[count]
@@ -565,7 +544,8 @@ def plot_train_val_losses(filename: str, folder: str, id: int|None = None):
 
             if validation_id == id:
                 validation_loss_data = validation_loss
-            
+    
+    # Plots the train-val loss of the model with id=id
     if id is not None:
         plt.plot(validation_loss_data, label='Validation Loss', color='red')
         plt.plot(training_loss_data, label="Trainign Loss", color="blue")
@@ -616,6 +596,7 @@ def plot_train_val_losses(filename: str, folder: str, id: int|None = None):
         plt.plot(epochs, avg_train_loss, label='Average Training Loss', color='blue')
         plt.plot(epochs, avg_val_loss, label='Average Validation Loss', color='red')
 
+        # Plot the best performance training and validation loss
         plt.plot(biggests_sigma_train_loss, label="Best performance training loss", color="green")
         plt.plot(biggests_sigma_val_loss, label="Best performance validation loss", color="yellow")
 
@@ -623,16 +604,11 @@ def plot_train_val_losses(filename: str, folder: str, id: int|None = None):
         plt.fill_between(epochs, avg_train_loss - std_train_loss, avg_train_loss + std_train_loss, color='blue', alpha=0.2)
         plt.fill_between(epochs, avg_val_loss - std_val_loss, avg_val_loss + std_val_loss, color='red', alpha=0.2)
 
-        # Add a vertical line at the median length
-        #plt.axvline(x=median_length, color='green', linestyle='--', label=f'Median Length ({median_length})')
-
-        # Labels and title
         plt.title('Average Training and Validation Loss with Variance')
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.legend()
 
-        # Show the plot
         plt.show()
 
 
@@ -641,6 +617,6 @@ if __name__ == "__main__":
     #explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100)
     #explore_different_architectures("AAPL", "lstm_test", "lstm_test", maxEpochs=100, lstm=True, minNeurons=9, maxNeurons=81, dNeurons=3)
     #plot_train_val_losses("training_best_lstm", "training_best_lstm", id = 115)
-    #perform_statistical_analysis("training_best_lstm", "training_best_lstm", lstm=True)
+    perform_statistical_analysis("lstm_test", "lstm_test", lstm=True)
     #from trend_model.test_run import run
     #run()

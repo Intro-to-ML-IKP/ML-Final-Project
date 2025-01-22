@@ -45,6 +45,8 @@ class NetworksConstructor:
         """
         Initializes parameters used throughout the class.
 
+        :param model: The model to be used, has to be of type Model
+        :type model: Model
         :param input_size: Number of data points in the input data.
         :type input_size: int
         :param output_size: Number of points in the output data.
@@ -61,15 +63,33 @@ class NetworksConstructor:
         self.model: Model = model
 
     @property
-    def training_loss(self):
+    def training_loss(self) -> list[list[float]]:
+        """
+        A way of retrieving the training loss
+
+        :return: the training loss
+        :rtype: list[list[float]]
+        """
         return deepcopy(self._training_loss)
     
     @property
-    def validation_loss(self):
+    def validation_loss(self) -> list[list[float]]:
+        """
+        A way of retrieving the validation loss
+
+        :return: the validation loss
+        :rtype: list[list[float]]
+        """
         return deepcopy(self._validation_loss)
 
     @property
-    def results(self):
+    def results(self) -> list:
+        """
+        A way of retrieving the results.
+
+        :return: the results
+        :rtype: list
+        """
         return deepcopy(self._results)
     
     def _build_model(
@@ -118,20 +138,12 @@ class NetworksConstructor:
     def _explore(
             self,
             params: ParamTuple,
-            results_filename: str,
-            results_foldername: str
             ) -> None:
         """
         Explores one model at a time
 
         :param params: the parameters of the model.
         :type params: ParamTuple
-        :param results_filename: the name of the file to be used
-        for intermidiate saving
-        :type results_filename: str
-        :param results_foldername: the folder where the intermidiate files
-        are saved
-        :type results_foldername: str
         """
         # Unpacking the parameters
         (
@@ -186,29 +198,14 @@ class NetworksConstructor:
 
         # Print the progress on which model is currently being trained
         print(f"Now training the model {count}/{maxCount}")
-        
-        # Intermediatly saves duiring simulations
-        if len(self.validation_loss) in LIST_BB:
-            results_handler = ResultsHandler(self.validation_loss, mae=False)
-            results_handler.save_results(
-                f"{results_filename}_validation_loss_{count}",
-                results_foldername
-                )
             
-            results_handler.results = self.training_loss
-            results_handler.save_results(
-                f"{results_filename}_training_loss_{count}",
-                results_foldername
-                )
-            
-            maes = NetworksDict().sort_results_list(self.results)
-            results_handler.results = maes
-            results_handler.save_results(
-                f"{results_filename}_{count}",
-                results_foldername
-                )
-            
-        return [mae, paramSet], (count+1, validation_loss), (count+1, training_loss), model, count+1
+        return (
+            [mae, paramSet],
+            (count+1, validation_loss),
+            (count+1, training_loss),
+            model,
+            count+1
+        )
 
     def explore_different_architectures(
         self,
@@ -244,6 +241,12 @@ class NetworksConstructor:
                 - learning_rates: The learning rate used in training.
                 - batch_sizes: Number of samples processed before weight update.
         :type paramList: list[tuple[list[int], float, int]]
+        :param results_filename: the filename under which to save the results.
+        :type results_filename: str
+        :param results_foldername: the folder where to save the results.
+        :type results_foldername: str
+        :param save_model: If set to True save the models being trained.
+        :type save_model: bool
 
         :return: All mean absolute errors (maes) for each parameter combination, 
         with the corresponding parameter sets.
@@ -290,7 +293,15 @@ class NetworksConstructor:
                 model.save_model("early_stoppage", f"AAPL_{count}")
             
 class NetworksDict:
-    def sort_results_list(self, result_list):
+    def sort_results_list(self, result_list: list[list[float]]) -> dict:
+        """
+        Sorts the results from a result list.
+
+        :param result_list: the results list
+        :type result_list: list[list[float]]
+        :return: sorted results
+        :rtype: dict
+        """
         sorted_results = self._sort_results(result_list)
         return sorted_results
     

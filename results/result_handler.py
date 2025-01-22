@@ -15,7 +15,27 @@ class ResultsHandler:
     """
     This class is used to handle saving and loading of results.
     """
-    def __init__(self, results: dict|list[list[float]]|None = None, mae: bool = True, lstm: bool = False) -> None:
+    def __init__(
+            self,
+            results: dict|list[list[float]]|None = None,
+            mae: bool = True,
+            lstm: bool = False
+    ) -> None:
+        """
+        Instantiates a result handler that saves, loads and
+        perfrorms stastitical analysis on results from the training of
+        a ML model.
+
+        :param results: the results,
+        defaults to None
+        :type results: dict | list[list[float]] | None, optional
+        :param mae: if True generates a dataframe from the results,
+        defaults to True
+        :type mae: bool, optional
+        :param lstm: if True interprets results in accordance to the LSTM
+        experiment, defaults to False
+        :type lstm: bool, optional
+        """
         self._lstm_results = lstm
         self._results = results
         if mae:
@@ -32,7 +52,13 @@ class ResultsHandler:
         return deepcopy(self._results)
     
     @results.setter
-    def results(self, results) -> None:
+    def results(self, results: dict|list[float]) -> None:
+        """
+        Used to set the results attribute.
+
+        :param results: the results
+        :type results: dict|list[float]
+        """
         self._results = results
     
     @property
@@ -46,6 +72,7 @@ class ResultsHandler:
         """
         df = self._df
 
+        # Reformulates the dataframe if LSTM
         if self._lstm_results:
             df = df.drop(columns="Neurons Layer 1")
             df = df.drop(columns="Number of Layers")
@@ -125,19 +152,6 @@ class ResultsHandler:
         else:
             print(f"There is no dir `{filename}` found")
 
-    def load_multiple_results(
-            self,
-            filenames: list[str],
-            foldername: str
-            ) -> None:
-        results = pd.DataFrame()
-        for filename in filenames:
-            self.load_results(filename, foldername)
-            df2 = self._generate_pd_dataframe()
-            self._results = None
-            results = pd.concat([results, df2], ignore_index=True)
-        self._df = results
-
     def calculate_correlation_coefficients(
             self
             ) -> tuple[Series, pd.DataFrame]:
@@ -154,6 +168,7 @@ class ResultsHandler:
         # Drop the id column
         df = df.drop(columns=["id"])
 
+        # Reformulates the dataframe if LSTM
         if self._lstm_results:
             df = df.drop(columns="Neurons Layer 1")
             df = df.drop(columns="Number of Layers")
@@ -193,7 +208,8 @@ class ResultsHandler:
 
         # Drop the id column
         df = df.drop(columns=["id"])
-
+        
+        # Reformulates the dataframe if LSTM
         if self._lstm_results:
             df = df.drop(columns="Neurons Layer 1")
             df = df.drop(columns="Number of Layers")
@@ -238,7 +254,7 @@ class ResultsHandler:
     def get_parmeter_ranges(self) -> pd.DataFrame:
         """
         Get ranges for the explored parameter space of each
-        parameter.
+        parameter. Not implimented for LSTM yet.
 
         :return: a dataframe with the min-max values of each
         parmaeters along iwth their mean value.
@@ -300,6 +316,7 @@ class ResultsHandler:
         # Drop the id column
         df = df.drop(columns=["id"])
 
+        # Reformulates the dataframe if LSTM
         if self._lstm_results:
             df = df.drop(columns="Neurons Layer 1")
             df = df.drop(columns="Number of Layers")
@@ -329,6 +346,7 @@ class ResultsHandler:
         # Drop the id column
         df = df.drop(columns=["id"])
 
+        # Reformulates the dataframe if LSTM
         if self._lstm_results:
             df = df.drop(columns="Neurons Layer 1")
             df = df.drop(columns="Number of Layers")

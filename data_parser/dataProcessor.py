@@ -44,16 +44,18 @@ class DataProcessor:
             length: int = 3
             ) -> list[float]:
         """
-        The function `_calculate_SMA` calculates the
-        Simple Moving Average for a given dataset over a specified
-        length of time.
+        Ccalculates the Simple Moving Average for a
+        given dataset over a specified lookback time.
         
+        :param stock_data: the stock data of whic to calculate
+        the SMA.
+        :type stock_data: list[tuple[float,float,float,float]]
         :param length: the length of the period to consider
         when calculating the Simple Moving Average (SMA).
         :type length: int (optional)
-        :return sets_SMA: lists of floats representing
+        :return SMA_list: lists of floats representing
         the SMA
-        :sets_SMA type: list[Float]
+        :sets_SMA SMA_list: list[list[Float]]
         """
         # Unzipping the close
         _, _, _, close = zip(*stock_data)
@@ -81,7 +83,10 @@ class DataProcessor:
         Calculates the residuals by substracting the closing prices
         from a Simple Moving Average (SMA).
 
-        :param sma: Simple Moving Average on the data.
+        :param stock_data: the stock data of whic to calculate
+        the SMA.
+        :type stock_data: list[tuple[float,float,float,float]]
+        :param sma: the Simple Moving Average of the data.
         :sma type: list[float]
         :return residuals: the difference between SMA and the closing
         prices.

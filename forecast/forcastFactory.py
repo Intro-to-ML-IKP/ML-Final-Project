@@ -221,7 +221,6 @@ class ForcastFactory:
         
         plotter.masterPlot(True, True, True)
         
-
     def _train_model(self) -> None:
         """
         Helper method used to train the model.
