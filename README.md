@@ -1,52 +1,72 @@
-# Intro to ML - Assignment 3 Proposal
+# Ensemble Model for Stock Price Prediction
 
-**Authors:**
-- Iva I. Ivanova (s5614260)
-- Katya T. Toncheva (s5460786)
-- Petar I. Penchev (s4683099)
+## Overview
+This project implements an ensemble model combining a **Multilayer Perceptron (MLP)** and a **Long Short-Term Memory (LSTM) Recurrent Neural Network (RNN)** to predict stock closing prices. The MLP predicts residuals (differences between stock prices and a trendline derived from a Simple Moving Average, SMA), while the LSTM extrapolates the SMA to model underlying trends. The model is trained and evaluated using stock data from Apple Inc.
 
-**Date:** December 25, 2024
+## Authors
+- **Iva I. Ivanova** (s5614260)
+- **Katya T. Toncheva** (s5460786)
+- **Petar I. Penchev** (s4683099)
 
-## Goal
+## Dataset
+The dataset is sourced from **Yahoo Finance** via the `yfinance` Python library. It includes **500 daily candlesticks** of Apple Inc.'s stock prices, covering the period from **March 21, 2021, to January 15, 2025**.
 
-The goal of this project is to develop an ensemble model comprised of a feedforward neural network (FFNN) and a long short-term memory (LSTM) recurrent neural network (RNN) tasked with predicting closing prices of a stock.
+## Model Architecture
+### Multilayer Perceptron (MLP)
+- Predicts residuals (closing price minus SMA).
+- Trained using 5,600 configurations with hyperparameter tuning.
+- Best architecture: **Two hidden layers (10 and 8 neurons), learning rate 0.005, batch size 5**.
 
-## Project Description
+### Long Short-Term Memory (LSTM)
+- Models the trend by predicting the next SMA value.
+- Trained using 5,000 configurations.
+- Best architecture: **Single LSTM layer with 18 neurons, learning rate 0.0025, batch size 1**.
 
-The FFNN is designed to predict the residuals between the closing prices and the trendline, represented by the simple moving average (SMA), which is also referred to as the running average. Meanwhile, the LSTM is responsible for extrapolating the SMA. By combining these two components, the model aims to forecast closing prices more effectively. This work is inspired by and builds on a previous project.
+### Ensemble Model
+- Combines MLP residual predictions and LSTM trend predictions.
+- Achieved a **Mean Absolute Error (MAE) of 2.14 USD** on test data.
 
-## Materials
+## Preventing Overfitting
+- **L2 Regularization** applied to MLP.
+- **Normalization** used for LSTM.
+- **Early Stopping** (4-epoch patience) implemented.
 
-### Dataset
+## Hyperparameter Tuning
+Both models underwent extensive hyperparameter tuning to find optimal configurations. The hyperparameters tuned include:
+- **Number of hidden layers and neurons** (for MLP and LSTM).
+- **Learning rate**.
+- **Batch size**.
 
-The data used for training both machine learning models is sourced from the Yahoo API. It is accessed through the library `yfinance` (v. 0.2.44). The data used is referred to as a "candlestick", a tuple containing ("date", "open price", "highest price", "lowest price", "close price").
+## Results
+| Model  | Best Architecture | MAE |
+|--------|------------------|-----|
+| MLP    | 10-8 neurons, LR 0.005, batch size 5 | 0.21 |
+| LSTM   | 18 neurons, LR 0.0025, batch size 1  | 5.20 |
+| Ensemble | MLP + LSTM | **2.14** |
 
-### Preprocessing the data for the FFNN
+## Conclusion
+The ensemble approach successfully leverages both models to improve prediction accuracy. While the MLP struggled with residual prediction due to the randomness in stock prices, the LSTM effectively captured the trend. Future work can explore additional financial indicators like **Bollinger Bands, trading volume, and long-term trends** to further enhance performance.
 
-In training the FFNN, what we care about are the residuals. The residuals are the difference between the closing prices and the trend of the stock data. This trend is computed using a simple moving average through the closing prices:
+## Installation
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/Intro-to-ML-IKP/ML-Final-Project.git
+   cd ML-Final-Project
+   ```
+2. Install dependencies:
+   ```sh
+   pip install -r requirements.txt
+   ```
+3. Run the main script:
+   ```sh
+   python main.py
+   ```
 
-\[
-\text{SMA(date)} = \frac{1}{N} \sum^N_{n=1} \text{Closing Price(date-N)}
-\]
+## References
+- **Yahoo Finance API** (`yfinance` library)
+- Hornik et al. (1989) - *MLPs as Universal Function Approximators*
+- He et al. (2024) - *Regression and Ensemble Models for Financial Forecasting*
 
-Where $\text{Closing Price(date-N)}$ is the closing price at a particular past date, $N$ is the number of units of "lookback" time we are interested in, and SMA(date) is the simple moving average. Thus, the residuals are defined as:
+## License
+This project is licensed under the MIT License.
 
-\[
-\text{Residual(date)} = \text{Closing Price(date)} - \text{SMA(date)}
-\]
-
-Where $\text{Closing Price(date)}$ is the closing price, $\text{SMA(date)}$ is the simple moving average, and $\text{Residual(date)}$ is the residual at a particular date.
-
-### Preprocessing the data for the LSTM
-
-In training the LSTM, what we are trying to predict is the trend. This trend is computed using the simple moving average through the closing prices (refer to the equation above). Then, the data is normalized to help make the inputs more balanced and reduce the impact of any outliers in the data. One can refer to the figure below for an example of the data that is going to be used in training these models.
-
-### Model
-
-We will restrict ourselves to a smaller-sized FFNN in accordance with previous findings, specifically a maximum of 2 layers and a neuron size no bigger than 16 per hidden layer.
-
-Regarding the LSTM, we still have not decided on an exact architecture.
-
-### Metrics
-
-We will definitely look at the Mean Absolute Error (MAE) as one of the metrics, but we might implement more than one.
