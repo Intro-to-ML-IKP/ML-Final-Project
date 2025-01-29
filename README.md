@@ -62,6 +62,55 @@ The ensemble approach successfully leverages both models to improve prediction a
    python main.py
    ```
 
+## Structure
+```plaintext
+ML-Final-Project/
+│── data_parser/                          # Directory for handling and processing data
+│   ├── __init__.py                       # Initializes the package
+│   ├── dataFactory.py                    # Orchestrates the whole data pipeline
+│   ├── dataProcessor.py                  # Cleans and preprocesses the raw data
+│   ├── dataReader.py                     # Reads the preprocessed data for use in training
+│   ├── stockGetter.py                    # Extracts stock-related data from Yahoo Finance API
+│
+│── forcast/                               # Directory for model forecasting and results
+│   ├── __init__.py                       # Initializes the package
+│   ├── ensembleModel.py                  # Combines predictions from MLP and LSTM model
+│   ├── forcastFactory.py                 # Factory for creating forecasts using only an MLP and Linear Regression. Orchestrates the forcasting pipeline
+│   ├── forcastFactoryEnsemble.py         # Factory for creates ensemble forecast model. Orchestrates the forcasting pipeline of the ensemble model
+│   ├── forcastFactory_initializer.py     # Initializes and sets up the forecast factories
+│
+│── graphs_for_project/                   # Contains graphs used in the paper
+│
+│── models/                                # The folder containing the saved models
+│
+│── network/                               # Source code for defining and training neural network models
+│   ├── __init__.py                       # Initializes the package
+│   ├── network.py                        # Defines the neural network architecture and training logic
+│   ├── networkFactory.py                 # Creates a neural network
+│   ├── network_constructor.py            # Constructs different types of neural networks
+│   ├── parameterConstructor.py           # Defines MLP (Multi-Layer Perceptron) and LSTM (Long Short-Term Memory) model architectures
+│
+│── results/                               # Stores the output, evaluation metrics, and visualizations of model performance
+│
+│── trend_model/                           # Source code for trend prediction models (LSTM)
+│   ├── __init__.py                       # Initializes the package
+│   ├── base_model.py                     # Defines the basic model architecture and training procedure of an LSTM
+│
+│── visualisation/                         # Source code for visualizing results, predictions and forcasts
+│   ├── __init__.py                       # Initializes the package
+│   ├── vizualize.py                      # Contains logic for generating visualizations (e.g., plots, graphs) of results
+│
+│── LICENSE                                # MIT License for the project
+│── README.md                              # Project documentation, describing the purpose and usage
+│── requirements.txt                       # List of dependencies required to run the project
+│── .gitignore                             # Files and directories to exclude from git tracking
+│── environment.yml                        # Environment file
+│── main.py                                # The main script
+│── utils.py                               # Contains simple utitils scripts
+```
+
+## Notable contributions
+This is a continuation on a previous work done by Thomas Smeman, Gideon Jadael Wiersma, and Petar I. Penchev.
 ## References
 - **Yahoo Finance API** (`yfinance` library)
 - Hornik et al. (1989) - *MLPs as Universal Function Approximators*
