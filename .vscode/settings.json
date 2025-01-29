@@ -1,7 +1,0 @@
-{
-    "docwriter.style": "Auto-detect",
-    "docwriter.progress.trackFunctions": false,
-    "docwriter.progress.trackMethods": false,
-    "docwriter.hotkey.windows": "Ctrl + .",
-    "python.analysis.typeCheckingMode": "off"
-}
